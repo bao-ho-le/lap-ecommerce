@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="14dp"
+    app:cardBackgroundColor="@color/premium_surface"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/premium_border"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="14dp">
+
+        <ImageView
+            android:id="@+id/cartImage"
+            android:layout_width="88dp"
+            android:layout_height="88dp"
+            android:layout_marginEnd="14dp"
+            android:background="@drawable/bg_circle_surface"
+            android:contentDescription="@string/app_name"
+            android:scaleType="centerCrop"
+            tools:src="@drawable/product_macbook" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/cartName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/premium_black"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                tools:text="MacBook Pro 14" />
+
+            <TextView
+                android:id="@+id/cartPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textColor="@color/premium_gray"
+                android:textSize="14sp"
+                tools:text="2,499 VND" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/decreaseButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:minWidth="40dp"
+                    android:minHeight="40dp"
+                    android:text="-"
+                    android:textAllCaps="false"
+                    android:textColor="@color/premium_black"
+                    app:backgroundTint="@color/white"
+                    app:cornerRadius="12dp"
+                    app:strokeColor="@color/premium_border"
+                    app:strokeWidth="1dp" />
+
+                <TextView
+                    android:id="@+id/quantityValue"
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textColor="@color/premium_black"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    tools:text="1" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/increaseButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:minWidth="40dp"
+                    android:minHeight="40dp"
+                    android:text="+"
+                    android:textAllCaps="false"
+                    android:textColor="@color/premium_black"
+                    app:backgroundTint="@color/white"
+                    app:cornerRadius="12dp"
+                    app:strokeColor="@color/premium_border"
+                    app:strokeWidth="1dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/cartSubtotal"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/premium_black"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    tools:text="2,499 VND" />
+
+                <TextView
+                    android:id="@+id/removeButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Remove"
+                    android:textColor="@color/premium_gray"
+                    android:textSize="13sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

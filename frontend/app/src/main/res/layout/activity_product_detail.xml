@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".activities.ProductDetailActivity">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/detailScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:paddingBottom="120dp"
+        app:layout_constraintBottom_toTopOf="@id/bottomActionBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <ImageButton
+                android:id="@+id/backButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_circle_surface"
+                android:contentDescription="@string/back"
+                android:padding="12dp"
+                android:src="@drawable/ic_back"
+                android:tint="@color/premium_black" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="320dp"
+                android:layout_marginTop="20dp"
+                app:cardBackgroundColor="@color/premium_light_gray"
+                app:cardCornerRadius="32dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/premium_border"
+                app:strokeWidth="1dp">
+
+                <ImageView
+                    android:id="@+id/productImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/app_name"
+                    android:scaleType="centerCrop"
+                    tools:src="@drawable/product_macbook" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/categoryChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:checkable="false"
+                android:textColor="@color/premium_black"
+                app:chipBackgroundColor="@color/premium_light_gray"
+                app:chipCornerRadius="20dp" />
+
+            <TextView
+                android:id="@+id/productTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:textColor="@color/premium_black"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                tools:text="MacBook Pro 14" />
+
+            <TextView
+                android:id="@+id/productPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/premium_gray"
+                android:textSize="20sp"
+                tools:text="$2499.00" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:text="@string/specs"
+                android:textColor="@color/premium_black"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="@color/premium_light_gray"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:text="@string/cpu"
+                            android:textColor="@color/premium_gray"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/cpuValue"
+                            android:layout_marginTop="4dp"
+                            android:textColor="@color/premium_black"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            tools:text="M3 Pro" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="@color/premium_light_gray"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:text="@string/ram"
+                            android:textColor="@color/premium_gray"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/ramValue"
+                            android:layout_marginTop="4dp"
+                            android:textColor="@color/premium_black"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            tools:text="18GB" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:text="@string/description"
+                android:textColor="@color/premium_black"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/descriptionValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:lineSpacingExtra="4dp"
+                android:textColor="@color/premium_gray"
+                android:textSize="15sp"
+                tools:text="A refined pro notebook with all-day battery life and a vivid Liquid Retina display." />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/bottomActionBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:strokeColor="@color/premium_border"
+        app:strokeWidth="1dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/addToCartButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:text="@string/add_to_cart"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/premium_black"
+            app:cornerRadius="18dp" />
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

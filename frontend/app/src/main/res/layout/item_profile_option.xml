@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/premium_border"
+    app:strokeWidth="1dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/optionIcon"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_circle_surface"
+            android:padding="8dp"
+            android:tint="@color/premium_black"
+            tools:src="@android:drawable/ic_menu_manage" />
+
+        <TextView
+            android:id="@+id/optionTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:textColor="@color/premium_black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/optionChevron"
+            app:layout_constraintStart_toEndOf="@id/optionIcon"
+            app:layout_constraintTop_toTopOf="@id/optionIcon"
+            tools:text="Settings" />
+
+        <TextView
+            android:id="@+id/optionSubtitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/premium_gray"
+            android:textSize="13sp"
+            app:layout_constraintEnd_toStartOf="@id/optionChevron"
+            app:layout_constraintStart_toEndOf="@id/optionIcon"
+            app:layout_constraintTop_toBottomOf="@id/optionTitle"
+            tools:text="App preferences and account controls" />
+
+        <ImageView
+            android:id="@+id/optionChevron"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/ic_arrow_right"
+            android:tint="@color/premium_gray"
+            app:layout_constraintBottom_toBottomOf="@id/optionIcon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/optionIcon" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

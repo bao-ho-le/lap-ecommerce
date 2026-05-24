@@ -30,37 +30,83 @@ import java.util.List;
 @Transactional
 public class OrderServiceImpl implements OrderService {
 
+    private static final Long DEFAULT_USER_ID = 1L;
+
     private final OrderRepository orderRepository;
+    private final com.example.lap_ecommerce.Order.repository.OrderItemRepository orderItemRepository;
     private final CartRepository cartRepository;
     private final ProductCatalogPort productCatalogPort;
+    private final com.example.lap_ecommerce.Product.repository.ProductRepository productRepository;
 
     @Override
-    public OrderResponse createOrder(OrderRequest request) {
-        List<Cart> cartItems = cartRepository.findAll();
+        public OrderResponse createOrder(OrderRequest request) {
+        List<Cart> cartItems = cartRepository.findByUserId(DEFAULT_USER_ID);
         if (cartItems.isEmpty()) {
             throw new EmptyCartException("Cannot create order from an empty cart");
         }
+        List<com.example.lap_ecommerce.Order.entity.OrderItem> itemsToSave = new java.util.ArrayList<>();
 
-        List<OrderItemResponse> orderItems = cartItems.stream()
-                .map(this::toOrderItemResponse)
-                .toList();
-
-        BigDecimal totalAmount = orderItems.stream()
-                .map(OrderItemResponse::getSubtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalAmount = BigDecimal.ZERO;
 
         Order order = Order.builder()
-                .totalAmount(totalAmount)
-                .status(OrderStatus.PENDING)
-                .shippingAddress(request.getShippingAddress())
-                .paymentMethod(request.getPaymentMethod())
-            .itemsJson(encodeItems(orderItems))
-                .build();
+            .shippingAddress(request.getShippingAddress())
+            .paymentMethod(request.getPaymentMethod())
+            .status(OrderStatus.PENDING)
+            .userId(DEFAULT_USER_ID)
+            .totalAmount(BigDecimal.ZERO)
+            .build();
 
         Order savedOrder = orderRepository.save(order);
 
-        cartItems.forEach(item -> productCatalogPort.deductStock(item.getProductId(), item.getQuantity()));
-        cartRepository.deleteAll();
+        for (Cart ci : cartItems) {
+            ProductSnapshot product = productCatalogPort.findById(ci.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + ci.getProductId()));
+
+            if (ci.getQuantity() > product.getStockQty()) {
+            throw new OutOfStockException("Requested quantity exceeds available stock for product id: " + product.getId());
+            }
+
+            com.example.lap_ecommerce.Product.entity.Product productEntity = productRepository.findById(product.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + product.getId()));
+
+            com.example.lap_ecommerce.Order.entity.OrderItem orderItem = com.example.lap_ecommerce.Order.entity.OrderItem.builder()
+                .order(savedOrder)
+                .product(productEntity)
+                .quantity(ci.getQuantity())
+                .unitPrice(product.getPrice())
+                .build();
+
+            BigDecimal subtotal = product.getPrice().multiply(BigDecimal.valueOf(ci.getQuantity()));
+            totalAmount = totalAmount.add(subtotal);
+
+            itemsToSave.add(orderItem);
+        }
+
+        // persist items
+        orderItemRepository.saveAll(itemsToSave);
+
+        // update order total
+        savedOrder.setTotalAmount(totalAmount);
+        savedOrder = orderRepository.save(savedOrder);
+
+        // deduct stock
+        for (Cart ci : cartItems) {
+            productCatalogPort.deductStock(ci.getProductId(), ci.getQuantity());
+        }
+
+        // clear cart for user
+        cartRepository.deleteByUserId(DEFAULT_USER_ID);
+
+        List<OrderItemResponse> orderItems = itemsToSave.stream()
+            .map(it -> OrderItemResponse.builder()
+                .itemId(it.getItemId())
+                .productId(it.getProduct().getId())
+                .productName(it.getProduct().getName())
+                .quantity(it.getQuantity())
+                .unitPrice(it.getUnitPrice())
+                .subtotal(it.getUnitPrice().multiply(BigDecimal.valueOf(it.getQuantity())))
+                .build())
+            .toList();
 
         return toOrderResponse(savedOrder, orderItems);
     }
@@ -68,16 +114,32 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true)
     public List<OrderResponse> getAllOrders() {
-        return orderRepository.findAll().stream()
-                .map(order -> toOrderResponse(order, readItemsJson(order.getItemsJson())))
-                .toList();
+        return orderRepository.findByUserId(DEFAULT_USER_ID).stream()
+            .map(order -> toOrderResponse(order, order.getItems().stream().map(it -> OrderItemResponse.builder()
+                .itemId(it.getItemId())
+                .productId(it.getProduct().getId())
+                .productName(it.getProduct().getName())
+                .quantity(it.getQuantity())
+                .unitPrice(it.getUnitPrice())
+                .subtotal(it.getUnitPrice().multiply(BigDecimal.valueOf(it.getQuantity())))
+                .build()).toList()))
+            .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public OrderResponse getOrderById(Long id) {
         Order order = findOrder(id);
-        return toOrderResponse(order, readItemsJson(order.getItemsJson()));
+        List<OrderItemResponse> items = order.getItems().stream().map(it -> OrderItemResponse.builder()
+                .itemId(it.getItemId())
+                .productId(it.getProduct().getId())
+                .productName(it.getProduct().getName())
+                .quantity(it.getQuantity())
+                .unitPrice(it.getUnitPrice())
+                .subtotal(it.getUnitPrice().multiply(BigDecimal.valueOf(it.getQuantity())))
+                .build()).toList();
+
+        return toOrderResponse(order, items);
     }
 
     @Override
@@ -86,12 +148,21 @@ public class OrderServiceImpl implements OrderService {
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new InvalidOrderStateException("Only pending orders can be cancelled");
         }
-
-        List<OrderItemResponse> items = readItemsJson(order.getItemsJson());
-        items.forEach(item -> productCatalogPort.restoreStock(item.getProductId(), item.getQuantity()));
+        // restore stock
+        order.getItems().forEach(it -> productCatalogPort.restoreStock(it.getProduct().getId(), it.getQuantity()));
 
         order.setStatus(OrderStatus.CANCELLED);
         Order updated = orderRepository.save(order);
+
+        List<OrderItemResponse> items = order.getItems().stream().map(it -> OrderItemResponse.builder()
+                .itemId(it.getItemId())
+                .productId(it.getProduct().getId())
+                .productName(it.getProduct().getName())
+                .quantity(it.getQuantity())
+                .unitPrice(it.getUnitPrice())
+                .subtotal(it.getUnitPrice().multiply(BigDecimal.valueOf(it.getQuantity())))
+                .build()).toList();
+
         return toOrderResponse(updated, items);
     }
 
@@ -118,61 +189,7 @@ public class OrderServiceImpl implements OrderService {
                 .subtotal(subtotal)
                 .build();
     }
-
-    private String encodeItems(List<OrderItemResponse> items) {
-        return items.stream()
-                .map(item -> String.join("|",
-                        valueOrEmpty(item.getItemId()),
-                        valueOrEmpty(item.getProductId()),
-                        Base64.getEncoder().encodeToString(item.getProductName().getBytes(StandardCharsets.UTF_8)),
-                        valueOrEmpty(item.getQuantity()),
-                        item.getUnitPrice().toPlainString(),
-                        item.getSubtotal().toPlainString()))
-                .reduce((left, right) -> left + ";" + right)
-                .orElse("");
-    }
-
-    private List<OrderItemResponse> readItemsJson(String itemsJson) {
-        if (itemsJson == null || itemsJson.isBlank()) {
-            return List.of();
-        }
-
-        List<OrderItemResponse> items = new ArrayList<>();
-        String[] rows = itemsJson.split(";");
-        for (String row : rows) {
-            String[] columns = row.split("\\|", -1);
-            if (columns.length != 6) {
-                throw new IllegalStateException("Failed to deserialize order items");
-            }
-
-            items.add(OrderItemResponse.builder()
-                    .itemId(parseLong(columns[0]))
-                    .productId(parseLong(columns[1]))
-                    .productName(new String(Base64.getDecoder().decode(columns[2]), StandardCharsets.UTF_8))
-                    .quantity(parseInteger(columns[3]))
-                    .unitPrice(new BigDecimal(columns[4]))
-                    .subtotal(new BigDecimal(columns[5]))
-                    .build());
-        }
-
-        return items;
-    }
-
-    private String valueOrEmpty(Long value) {
-        return value == null ? "" : value.toString();
-    }
-
-    private String valueOrEmpty(Integer value) {
-        return value == null ? "" : value.toString();
-    }
-
-    private Long parseLong(String value) {
-        return value == null || value.isBlank() ? null : Long.valueOf(value);
-    }
-
-    private Integer parseInteger(String value) {
-        return value == null || value.isBlank() ? null : Integer.valueOf(value);
-    }
+    
 
     private OrderResponse toOrderResponse(Order order, List<OrderItemResponse> items) {
         return OrderResponse.builder()

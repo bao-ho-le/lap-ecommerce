@@ -23,7 +23,7 @@ import java.util.List;
 @Transactional
 public class CartServiceImpl implements CartService {
 
-    private static final long DEFAULT_USER_ID = 1L;
+    private static final Long DEFAULT_USER_ID = 1L;
 
     private final CartRepository cartRepository;
     private final ProductCatalogPort productCatalogPort;
@@ -31,7 +31,7 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional(readOnly = true)
     public CartResponse getCart() {
-        return buildCartResponse(cartRepository.findAll());
+        return buildCartResponse(cartRepository.findByUserId(DEFAULT_USER_ID));
     }
 
     @Override
@@ -39,7 +39,7 @@ public class CartServiceImpl implements CartService {
         ProductSnapshot product = getExistingProduct(request.getProductId());
         validateStock(product, request.getQuantity());
 
-        Cart cartItem = cartRepository.findByProductId(request.getProductId())
+        Cart cartItem = cartRepository.findByUserIdAndProductId(DEFAULT_USER_ID, request.getProductId())
                 .map(existing -> {
                     int newQuantity = existing.getQuantity() + request.getQuantity();
                     validateStock(product, newQuantity);
@@ -76,12 +76,18 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void clearCart() {
-        cartRepository.deleteAll();
+        cartRepository.deleteByUserId(DEFAULT_USER_ID);
     }
 
     private Cart findCartItem(Integer cartId) {
-        return cartRepository.findById(cartId)
+        Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found with id: " + cartId));
+
+        if (!DEFAULT_USER_ID.equals(cart.getUserId())) {
+            throw new ResourceNotFoundException("Cart item not found with id: " + cartId);
+        }
+
+        return cart;
     }
 
     private ProductSnapshot getExistingProduct(Long productId) {

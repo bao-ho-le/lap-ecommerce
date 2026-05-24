@@ -55,9 +55,9 @@ class CartServiceImplTest {
         request.setQuantity(2);
 
         when(productCatalogPort.findById(1L)).thenReturn(Optional.of(productSnapshot));
-        when(cartRepository.findByProductId(1L)).thenReturn(Optional.empty());
+        when(cartRepository.findByUserIdAndProductId(1L, 1L)).thenReturn(Optional.empty());
         when(cartRepository.save(any(Cart.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(cartRepository.findAll()).thenReturn(List.of(Cart.builder().cartId(1).productId(1L).quantity(2).userId(1L).build()));
+        when(cartRepository.findByUserId(1L)).thenReturn(List.of(Cart.builder().cartId(1).productId(1L).quantity(2).userId(1L).build()));
 
         var response = cartService.addToCart(request);
 
@@ -86,7 +86,7 @@ class CartServiceImplTest {
         when(cartRepository.findById(1)).thenReturn(Optional.of(cart));
         when(productCatalogPort.findById(1L)).thenReturn(Optional.of(productSnapshot));
         when(cartRepository.save(any(Cart.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(cartRepository.findAll()).thenReturn(List.of(Cart.builder().cartId(1).productId(1L).quantity(3).userId(1L).build()));
+        when(cartRepository.findByUserId(1L)).thenReturn(List.of(Cart.builder().cartId(1).productId(1L).quantity(3).userId(1L).build()));
 
         var response = cartService.updateQuantity(1, request);
 
@@ -98,7 +98,7 @@ class CartServiceImplTest {
         Cart cart = Cart.builder().cartId(1).productId(1L).quantity(1).userId(1L).build();
 
         when(cartRepository.findById(1)).thenReturn(Optional.of(cart));
-        when(cartRepository.findAll()).thenReturn(List.of());
+        when(cartRepository.findByUserId(1L)).thenReturn(List.of());
 
         var response = cartService.deleteItem(1);
 

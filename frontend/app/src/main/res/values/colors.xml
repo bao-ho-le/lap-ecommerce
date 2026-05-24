@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="premium_black">#FF1D1D1F</color>
+    <color name="premium_gray">#FF6E6E73</color>
+    <color name="premium_light_gray">#FFF5F5F7</color>
+    <color name="premium_border">#FFE5E5EA</color>
+    <color name="premium_surface">#FFFFFFFF</color>
+    <color name="premium_accent">#FF0A84FF</color>
+    <color name="premium_success">#FF2F855A</color>
+    <color name="premium_warning">#FF7A7A80</color>
+</resources>
