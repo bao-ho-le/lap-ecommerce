@@ -1,7 +1,7 @@
 package com.example.lap_ecommerce.Order.controller;
 
-import com.example.lap_ecommerce.Order.dto.OrderRequest;
-import com.example.lap_ecommerce.Order.dto.OrderResponse;
+import com.example.lap_ecommerce.Order.dto.request.OrderRequest;
+import com.example.lap_ecommerce.Order.dto.response.OrderResponse;
 import com.example.lap_ecommerce.Order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("${api.prefix}/orders")
 @RequiredArgsConstructor
 public class OrderController {
 

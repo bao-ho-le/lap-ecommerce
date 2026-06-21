@@ -2,7 +2,7 @@ package com.example.lap_ecommerce.Order.service.impl;
 
 import com.example.lap_ecommerce.Cart.entity.Cart;
 import com.example.lap_ecommerce.Cart.repository.CartRepository;
-import com.example.lap_ecommerce.Order.dto.OrderRequest;
+import com.example.lap_ecommerce.Order.dto.request.OrderRequest;
 import com.example.lap_ecommerce.Order.entity.Order;
 import com.example.lap_ecommerce.Order.entity.OrderStatus;
 import com.example.lap_ecommerce.Order.entity.PaymentMethod;

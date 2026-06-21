@@ -1,7 +1,7 @@
 package com.example.lap_ecommerce.Order.service;
 
-import com.example.lap_ecommerce.Order.dto.OrderRequest;
-import com.example.lap_ecommerce.Order.dto.OrderResponse;
+import com.example.lap_ecommerce.Order.dto.request.OrderRequest;
+import com.example.lap_ecommerce.Order.dto.response.OrderResponse;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.example.lap_ecommerce.Cart.dto;
+package com.example.lap_ecommerce.Cart.dto.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -7,7 +7,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UpdateCartQuantityRequest {
+public class CartAddRequest {
+
+    @NotNull
+    private Long productId;
 
     @NotNull
     @Min(1)

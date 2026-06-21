@@ -1,8 +1,8 @@
 package com.example.lap_ecommerce.Cart.controller;
 
-import com.example.lap_ecommerce.Cart.dto.CartAddRequest;
-import com.example.lap_ecommerce.Cart.dto.CartResponse;
-import com.example.lap_ecommerce.Cart.dto.UpdateCartQuantityRequest;
+import com.example.lap_ecommerce.Cart.dto.request.CartAddRequest;
+import com.example.lap_ecommerce.Cart.dto.response.CartResponse;
+import com.example.lap_ecommerce.Cart.dto.request.UpdateCartQuantityRequest;
 import com.example.lap_ecommerce.Cart.service.CartService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/cart")
+@RequestMapping("${api.prefix}/cart")
 @RequiredArgsConstructor
 public class CartController {
 
@@ -34,13 +34,15 @@ public class CartController {
     }
 
     @PutMapping("/{id}/quantity")
-    public ResponseEntity<CartResponse> updateQuantity(@PathVariable Integer id,
-                                                       @Valid @RequestBody UpdateCartQuantityRequest request) {
+    public ResponseEntity<CartResponse> updateQuantity(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateCartQuantityRequest request) {
+
         return ResponseEntity.ok(cartService.updateQuantity(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<CartResponse> deleteItem(@PathVariable Integer id) {
+    public ResponseEntity<CartResponse> deleteItem(@PathVariable Long id) {
         return ResponseEntity.ok(cartService.deleteItem(id));
     }
 
