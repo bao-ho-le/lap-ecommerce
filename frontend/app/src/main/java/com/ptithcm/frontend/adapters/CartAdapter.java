@@ -20,15 +20,12 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
     public interface CartActionListener {
         void onIncrease(CartItemDto item);
-
         void onDecrease(CartItemDto item);
-
         void onRemove(CartItemDto item);
     }
 
     private final CartActionListener listener;
     private final List<CartItemDto> items = new ArrayList<>();
-
     public CartAdapter(CartActionListener listener) {
         this.listener = listener;
     }
@@ -69,15 +66,23 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     }
 
     public void restoreItem(int position, CartItemDto item) {
-        int safePosition = Math.max(0, Math.min(position, items.size()));
-        items.add(safePosition, item);
-        notifyItemInserted(safePosition);
+        items.add(position, item);
+        notifyItemInserted(position);
     }
 
     public int findIndex(int cartId) {
         for (int i = 0; i < items.size(); i++) {
             CartItemDto item = items.get(i);
             if (item.cartId != null && item.cartId == cartId) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public int getPositionById(int cartId) {
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).cartId == cartId) {
                 return i;
             }
         }

@@ -89,8 +89,14 @@ public class CartRepository {
 
     private CartResponseDto normalize(CartResponseDto response) {
         CartResponseDto normalized = new CartResponseDto();
-        normalized.items = response.items == null ? new ArrayList<>() : new ArrayList<>(response.items);
-        normalized.totalCartAmount = response.totalCartAmount == null ? BigDecimal.ZERO : response.totalCartAmount;
+        normalized.items = response.items == null
+                ? new ArrayList<>()
+                : new ArrayList<>(response.items);
+
+        normalized.totalCartAmount = response.totalCartAmount == null
+                ? BigDecimal.ZERO
+                : response.totalCartAmount;
+
         return normalized;
     }
 

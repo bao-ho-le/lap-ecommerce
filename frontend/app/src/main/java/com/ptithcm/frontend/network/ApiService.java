@@ -47,4 +47,6 @@ public interface ApiService {
 
     @PUT("orders/{id}/cancel")
     Call<OrderResponseDto> cancelOrder(@Path("id") long id);
+
+
 }

@@ -102,6 +102,12 @@
                 android:textColor="@color/white"
                 app:backgroundTint="@color/premium_black"
                 app:cornerRadius="18dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/openReviewButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Test Review"/>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

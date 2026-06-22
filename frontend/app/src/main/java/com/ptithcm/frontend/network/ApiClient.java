@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ApiClient {
 
     // Placeholder base URL — user will configure later.
-    private static final String BASE_URL = "http://10.0.2.2:8080/";
+    private static final String BASE_URL = "http://10.0.2.2:8080/api/v1/";
 
     private static Retrofit retrofit;
 
