@@ -1,4 +1,4 @@
-package com.example.lap_ecommerce.Order.dto;
+package com.example.lap_ecommerce.Order.dto.request;
 
 import com.example.lap_ecommerce.Order.entity.PaymentMethod;
 import jakarta.validation.constraints.NotBlank;

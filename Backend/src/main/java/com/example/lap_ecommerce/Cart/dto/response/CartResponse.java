@@ -1,4 +1,4 @@
-package com.example.lap_ecommerce.Cart.dto;
+package com.example.lap_ecommerce.Cart.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

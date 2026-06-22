@@ -1,4 +1,4 @@
-package com.example.lap_ecommerce.Cart.dto;
+package com.example.lap_ecommerce.Cart.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CartItemResponse {
-    private Integer cartId;
+    private Long cartId;
     private Long productId;
     private String productName;
     private BigDecimal unitPrice;

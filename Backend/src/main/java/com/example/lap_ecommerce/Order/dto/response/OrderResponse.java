@@ -1,4 +1,4 @@
-package com.example.lap_ecommerce.Order.dto;
+package com.example.lap_ecommerce.Order.dto.response;
 
 import com.example.lap_ecommerce.Order.entity.OrderStatus;
 import com.example.lap_ecommerce.Order.entity.PaymentMethod;

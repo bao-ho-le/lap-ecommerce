@@ -1,28 +1,34 @@
 package com.example.lap_ecommerce.Order.service.impl;
 
 import com.example.lap_ecommerce.Cart.entity.Cart;
+import com.example.lap_ecommerce.Cart.entity.CartItem;
+import com.example.lap_ecommerce.Cart.repository.CartItemRepository;
 import com.example.lap_ecommerce.Cart.repository.CartRepository;
-import com.example.lap_ecommerce.Order.dto.OrderItemResponse;
-import com.example.lap_ecommerce.Order.dto.OrderRequest;
-import com.example.lap_ecommerce.Order.dto.OrderResponse;
+import com.example.lap_ecommerce.Order.dto.response.OrderItemResponse;
+import com.example.lap_ecommerce.Order.dto.request.OrderRequest;
+import com.example.lap_ecommerce.Order.dto.response.OrderResponse;
 import com.example.lap_ecommerce.Order.entity.Order;
+import com.example.lap_ecommerce.Order.entity.OrderItem;
 import com.example.lap_ecommerce.Order.entity.OrderStatus;
+import com.example.lap_ecommerce.Order.repository.OrderItemRepository;
 import com.example.lap_ecommerce.Order.repository.OrderRepository;
 import com.example.lap_ecommerce.Order.service.OrderService;
+import com.example.lap_ecommerce.Product.entity.Product;
+import com.example.lap_ecommerce.Product.repository.ProductRepository;
 import com.example.lap_ecommerce.exception.EmptyCartException;
 import com.example.lap_ecommerce.exception.InvalidOrderStateException;
 import com.example.lap_ecommerce.exception.OutOfStockException;
 import com.example.lap_ecommerce.exception.ResourceNotFoundException;
 import com.example.lap_ecommerce.shared.product.ProductCatalogPort;
 import com.example.lap_ecommerce.shared.product.ProductSnapshot;
+import com.example.lap_ecommerce.user.entity.User;
+import com.example.lap_ecommerce.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 @Service
@@ -30,71 +36,82 @@ import java.util.List;
 @Transactional
 public class OrderServiceImpl implements OrderService {
 
-    private static final Long DEFAULT_USER_ID = 1L;
-
     private final OrderRepository orderRepository;
-    private final com.example.lap_ecommerce.Order.repository.OrderItemRepository orderItemRepository;
+    private final OrderItemRepository orderItemRepository;
     private final CartRepository cartRepository;
     private final ProductCatalogPort productCatalogPort;
-    private final com.example.lap_ecommerce.Product.repository.ProductRepository productRepository;
+    private final ProductRepository productRepository;
+    private final CartItemRepository cartItemRepository;
+    private final UserRepository userRepository;
 
     @Override
-        public OrderResponse createOrder(OrderRequest request) {
-        List<Cart> cartItems = cartRepository.findByUserId(DEFAULT_USER_ID);
+    public OrderResponse createOrder(String email, OrderRequest request) {
+        User user = getUserByEmail(email);
+
+        Cart cart = cartRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Cart not found for user id: " + user.getId()));
+
+        List<CartItem> cartItems = cart.getCartItems();
         if (cartItems.isEmpty()) {
             throw new EmptyCartException("Cannot create order from an empty cart");
         }
-        List<com.example.lap_ecommerce.Order.entity.OrderItem> itemsToSave = new java.util.ArrayList<>();
+
+        List<OrderItem> itemsToSave = new ArrayList<>();
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
         Order order = Order.builder()
             .shippingAddress(request.getShippingAddress())
             .status(OrderStatus.PENDING)
-            .userId(DEFAULT_USER_ID)
+            .user(user)
             .totalAmount(BigDecimal.ZERO)
             .build();
 
         Order savedOrder = orderRepository.save(order);
 
-        for (Cart ci : cartItems) {
-            ProductSnapshot product = productCatalogPort.findById(ci.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + ci.getProductId()));
+        for (CartItem cartItem : cartItems) {
 
-            if (ci.getQuantity() > product.getStockQty()) {
-            throw new OutOfStockException("Requested quantity exceeds available stock for product id: " + product.getId());
+            ProductSnapshot product = productCatalogPort.findById(cartItem.getProduct().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Product not found with id: " + cartItem.getProduct().getId()));
+
+            if (cartItem.getQuantity() > product.getStockQty()) {
+
+                throw new OutOfStockException("Requested quantity exceeds available stock for product id: " + product.getId());
             }
 
-            com.example.lap_ecommerce.Product.entity.Product productEntity = productRepository.findById(product.getId())
+            Product productEntity = productRepository.findById(product.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + product.getId()));
 
-            com.example.lap_ecommerce.Order.entity.OrderItem orderItem = com.example.lap_ecommerce.Order.entity.OrderItem.builder()
+            OrderItem orderItem = OrderItem.builder()
                 .order(savedOrder)
                 .product(productEntity)
-                .quantity(ci.getQuantity())
+                .quantity(cartItem.getQuantity())
                 .unitPrice(product.getPrice())
                 .build();
 
-            BigDecimal subtotal = product.getPrice().multiply(BigDecimal.valueOf(ci.getQuantity()));
+            BigDecimal subtotal = product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
             totalAmount = totalAmount.add(subtotal);
 
             itemsToSave.add(orderItem);
         }
 
-        // persist items
         orderItemRepository.saveAll(itemsToSave);
 
-        // update order total
         savedOrder.setTotalAmount(totalAmount);
         savedOrder = orderRepository.save(savedOrder);
 
         // deduct stock
-        for (Cart ci : cartItems) {
-            productCatalogPort.deductStock(ci.getProductId(), ci.getQuantity());
+        for (CartItem cartItem : cartItems) {
+            productCatalogPort.deductStock(
+                    cartItem.getProduct().getId(),
+                    cartItem.getQuantity()
+            );
+
         }
 
-        // clear cart for user
-        cartRepository.deleteByUserId(DEFAULT_USER_ID);
+        cartRepository.deleteByUserId(user.getId());
 
         List<OrderItemResponse> orderItems = itemsToSave.stream()
             .map(it -> OrderItemResponse.builder()
@@ -112,8 +129,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<OrderResponse> getAllOrders() {
-        return orderRepository.findByUserId(DEFAULT_USER_ID).stream()
+    public List<OrderResponse> getAllOrders(String email) {
+        User user = getUserByEmail(email);
+        return orderRepository.findByUserId(user.getId()).stream()
             .map(order -> toOrderResponse(order, order.getItems().stream().map(it -> OrderItemResponse.builder()
                 .itemId(it.getItemId())
                 .productId(it.getProduct().getId())
@@ -127,8 +145,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public OrderResponse getOrderById(Long id) {
+    public OrderResponse getOrderById(String email, Long id) {
+        User user = getUserByEmail(email);
         Order order = findOrder(id);
+        
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new ResourceNotFoundException("Order not found with id: " + id);
+        }
+
         List<OrderItemResponse> items = order.getItems().stream().map(it -> OrderItemResponse.builder()
                 .itemId(it.getItemId())
                 .productId(it.getProduct().getId())
@@ -142,12 +166,18 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderResponse cancelOrder(Long id) {
+    public OrderResponse cancelOrder(String email, Long id) {
+        User user = getUserByEmail(email);
         Order order = findOrder(id);
+        
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new ResourceNotFoundException("Order not found with id: " + id);
+        }
+
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new InvalidOrderStateException("Only pending orders can be cancelled");
         }
-        // restore stock
+
         order.getItems().forEach(it -> productCatalogPort.restoreStock(it.getProduct().getId(), it.getQuantity()));
 
         order.setStatus(OrderStatus.CANCELLED);
@@ -170,25 +200,19 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
     }
 
-    private OrderItemResponse toOrderItemResponse(Cart cartItem) {
-        ProductSnapshot product = productCatalogPort.findById(cartItem.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + cartItem.getProductId()));
 
-        if (cartItem.getQuantity() > product.getStockQty()) {
-            throw new OutOfStockException("Requested quantity exceeds available stock for product id: " + product.getId());
-        }
+    private OrderItemResponse toOrderItemResponse(OrderItem orderItem) {
 
-        BigDecimal subtotal = product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
         return OrderItemResponse.builder()
-                .itemId(cartItem.getCartId() == null ? null : cartItem.getCartId().longValue())
-                .productId(product.getId())
-                .productName(product.getName())
-                .quantity(cartItem.getQuantity())
-                .unitPrice(product.getPrice())
-                .subtotal(subtotal)
+                .itemId(orderItem.getItemId())
+                .productId(orderItem.getProduct().getId())
+                .productName(orderItem.getProduct().getName())
+                .quantity(orderItem.getQuantity())
+                .unitPrice(orderItem.getUnitPrice())
+                .subtotal(orderItem.getUnitPrice()
+                        .multiply(BigDecimal.valueOf(orderItem.getQuantity())))
                 .build();
     }
-    
 
     private OrderResponse toOrderResponse(Order order, List<OrderItemResponse> items) {
         return OrderResponse.builder()
@@ -199,5 +223,10 @@ public class OrderServiceImpl implements OrderService {
                 .orderDate(order.getOrderDate())
                 .items(items)
                 .build();
+    }
+
+    private User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found" + email));
     }
 }

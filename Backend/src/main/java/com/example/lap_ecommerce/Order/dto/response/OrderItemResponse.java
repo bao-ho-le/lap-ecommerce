@@ -1,4 +1,4 @@
-package com.example.lap_ecommerce.Order.dto;
+package com.example.lap_ecommerce.Order.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

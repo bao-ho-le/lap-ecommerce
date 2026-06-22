@@ -1,17 +1,20 @@
 package com.example.lap_ecommerce.Cart.service;
 
-import com.example.lap_ecommerce.Cart.dto.CartAddRequest;
-import com.example.lap_ecommerce.Cart.dto.CartResponse;
-import com.example.lap_ecommerce.Cart.dto.UpdateCartQuantityRequest;
+import com.example.lap_ecommerce.Cart.dto.request.CartAddRequest;
+import com.example.lap_ecommerce.Cart.dto.response.CartResponse;
+import com.example.lap_ecommerce.Cart.dto.request.UpdateCartQuantityRequest;
+import com.example.lap_ecommerce.Cart.entity.Cart;
 
 public interface CartService {
-    CartResponse getCart();
+    CartResponse getCart(String email);
 
-    CartResponse addToCart(CartAddRequest request);
+    Cart createCartIfNotExists(Long userId);
 
-    CartResponse updateQuantity(Integer cartId, UpdateCartQuantityRequest request);
+    CartResponse addToCart(String email, CartAddRequest request);
 
-    CartResponse deleteItem(Integer cartId);
+    CartResponse updateQuantity(String email, Long cartItemId, UpdateCartQuantityRequest request);
 
-    void clearCart();
+    CartResponse deleteItem(String email, Long cartItemId);
+
+    void clearCart(String email);
 }
