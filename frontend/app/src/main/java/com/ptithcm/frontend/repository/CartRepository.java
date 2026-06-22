@@ -33,7 +33,6 @@ public class CartRepository {
         }
         return instance;
     }
-
     public void getCart(@NonNull RepositoryCallback<CartResponseDto> callback) {
         apiService.getCart().enqueue(new Callback<CartResponseDto>() {
             @Override

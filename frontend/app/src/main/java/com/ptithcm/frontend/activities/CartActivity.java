@@ -3,14 +3,12 @@ package com.ptithcm.frontend.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.ptithcm.frontend.R;
 import com.ptithcm.frontend.adapters.CartAdapter;
 import com.ptithcm.frontend.databinding.ActivityCartBinding;
 import com.ptithcm.frontend.network.dto.CartItemDto;
@@ -96,6 +94,7 @@ public class CartActivity extends AppCompatActivity {
                 });
             }
         });
+
     }
 
     private void renderCart(CartResponseDto response) {

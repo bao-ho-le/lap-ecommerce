@@ -15,7 +15,9 @@ import com.example.lap_ecommerce.exception.OutOfStockException;
 import com.example.lap_ecommerce.exception.ResourceNotFoundException;
 import com.example.lap_ecommerce.shared.product.ProductCatalogPort;
 import com.example.lap_ecommerce.shared.product.ProductSnapshot;
-import com.example.lap_ecommerce.user.User;
+
+import com.example.lap_ecommerce.user.entity.User;
+
 import com.example.lap_ecommerce.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,8 +33,6 @@ import java.util.Optional;
 @Transactional
 public class CartServiceImpl implements CartService {
 
-    private static final Long DEFAULT_USER_ID = 1L;
-
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductCatalogPort productCatalogPort;
@@ -41,10 +41,12 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional(readOnly = true)
-    public CartResponse getCart() {
-        Cart cart = cartRepository.findByUserId(DEFAULT_USER_ID)
+    public CartResponse getCart (String email){
+        User user = getUserByEmail(email);
+
+        Cart cart = cartRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Cart not found for user id: " + DEFAULT_USER_ID));
+                        "Cart not found for user id: " + user.getId()));
 
         return buildCartResponse(cart);
     }
@@ -67,7 +69,8 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public CartResponse addToCart(CartAddRequest request) {
+    public CartResponse addToCart (String email, CartAddRequest request){
+        User user = getUserByEmail(email);
 
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -75,7 +78,7 @@ public class CartServiceImpl implements CartService {
 
         validateStock(product, request.getQuantity());
 
-        Cart cart = createCartIfNotExists(DEFAULT_USER_ID);
+        Cart cart = createCartIfNotExists(user.getId());
 
         Optional<CartItem> existingItem = cartItemRepository
                 .findByCartIdAndProductId(cart.getId(), product.getId());
@@ -88,7 +91,9 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public CartResponse updateQuantity(Long cartItemId, UpdateCartQuantityRequest request) {
+    public CartResponse updateQuantity (String email, Long cartItemId, UpdateCartQuantityRequest request){
+
+        User user = getUserByEmail(email);
 
         CartItem cartItem = findCartItem(cartItemId);
 
@@ -103,15 +108,18 @@ public class CartServiceImpl implements CartService {
 
         cartItemRepository.save(cartItem);
 
-        return getCart();
+        return getCart(email);
     }
 
-    @Override
-    public CartResponse deleteItem(Long cartItemId) {
 
-        Cart cart = cartRepository.findByUserId(DEFAULT_USER_ID)
+    @Override
+    public CartResponse deleteItem(String email, Long cartItemId) {
+
+        User user = getUserByEmail(email);
+
+        Cart cart = cartRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Cart not found for user id: " + DEFAULT_USER_ID));
+                        "Cart not found for user id: " + user.getId()));
 
         CartItem item = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -120,23 +128,31 @@ public class CartServiceImpl implements CartService {
         cart.getCartItems().remove(item);
 
         return buildCartResponse(cart);
+
     }
 
     @Override
-    public void clearCart() {
-        cartRepository.deleteByUserId(DEFAULT_USER_ID);
+    public void clearCart (String email){
+        User user = getUserByEmail(email);
+        cartRepository.deleteByUserId(user.getId());
     }
+
 
 
 
     // Helper ========================
 
-    private static void addOrUpdateCartItem(
-            Optional<CartItem> existingItem,
+    private User getUserByEmail (String email){
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email " + email));
+    }
+
+    private static void addOrUpdateCartItem (
+            Optional < CartItem > existingItem,
             Cart cart,
             Product product,
             CartAddRequest request
-    ) {
+    ){
         if (existingItem.isPresent()) {
             CartItem item = existingItem.get();
             int newQty = item.getQuantity() + request.getQuantity();
@@ -153,10 +169,13 @@ public class CartServiceImpl implements CartService {
                     .build();
 
             cart.getCartItems().add(newItem);
+
         }
     }
 
+
     private CartItem findCartItem(Long cartItemId) {
+
         CartItem cartItem = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found with id: " + cartItemId));
 
@@ -203,4 +222,5 @@ public class CartServiceImpl implements CartService {
                 .quantity(cartItem.getQuantity())
                 .subtotal(subtotal)
                 .build();
-    }}
+    }
+    }

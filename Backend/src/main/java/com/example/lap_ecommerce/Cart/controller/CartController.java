@@ -7,14 +7,8 @@ import com.example.lap_ecommerce.Cart.service.CartService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("${api.prefix}/cart")
@@ -24,31 +18,34 @@ public class CartController {
     private final CartService cartService;
 
     @GetMapping
-    public ResponseEntity<CartResponse> getCart() {
-        return ResponseEntity.ok(cartService.getCart());
+    public ResponseEntity<CartResponse> getCart(Authentication authentication) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(cartService.getCart(email));
     }
 
     @PostMapping("/add")
-    public ResponseEntity<CartResponse> addToCart(@Valid @RequestBody CartAddRequest request) {
-        return ResponseEntity.ok(cartService.addToCart(request));
+    public ResponseEntity<CartResponse> addToCart(Authentication authentication, @Valid @RequestBody CartAddRequest request) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(cartService.addToCart(email, request));
     }
 
     @PutMapping("/{id}/quantity")
-    public ResponseEntity<CartResponse> updateQuantity(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateCartQuantityRequest request) {
-
-        return ResponseEntity.ok(cartService.updateQuantity(id, request));
+    public ResponseEntity<CartResponse> updateQuantity(Authentication authentication, @PathVariable Long id,
+                                                       @Valid @RequestBody UpdateCartQuantityRequest request) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(cartService.updateQuantity(email, id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<CartResponse> deleteItem(@PathVariable Long id) {
-        return ResponseEntity.ok(cartService.deleteItem(id));
+    public ResponseEntity<CartResponse> deleteItem(Authentication authentication, @PathVariable Long id) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(cartService.deleteItem(email, id));
     }
 
     @DeleteMapping("/clear")
-    public ResponseEntity<Void> clearCart() {
-        cartService.clearCart();
+    public ResponseEntity<Void> clearCart(Authentication authentication) {
+        String email = authentication.getName();
+        cartService.clearCart(email);
         return ResponseEntity.noContent().build();
     }
 }

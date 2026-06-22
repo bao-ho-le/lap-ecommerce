@@ -6,15 +6,15 @@ import com.example.lap_ecommerce.Cart.dto.request.UpdateCartQuantityRequest;
 import com.example.lap_ecommerce.Cart.entity.Cart;
 
 public interface CartService {
-    CartResponse getCart();
+    CartResponse getCart(String email);
 
     Cart createCartIfNotExists(Long userId);
 
-    CartResponse addToCart(CartAddRequest request);
+    CartResponse addToCart(String email, CartAddRequest request);
 
-    CartResponse updateQuantity(Long cartId, UpdateCartQuantityRequest request);
+    CartResponse updateQuantity(String email, Long cartItemId, UpdateCartQuantityRequest request);
 
-    CartResponse deleteItem(Long cartId);
+    CartResponse deleteItem(String email, Long cartItemId);
 
-    void clearCart();
+    void clearCart(String email);
 }

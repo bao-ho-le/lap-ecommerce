@@ -9,7 +9,7 @@ import com.example.lap_ecommerce.Review.entity.Review;
 import com.example.lap_ecommerce.Review.repository.ReviewRepository;
 import com.example.lap_ecommerce.Review.service.ReviewService;
 import com.example.lap_ecommerce.exception.ResourceNotFoundException;
-import com.example.lap_ecommerce.user.User;
+import com.example.lap_ecommerce.user.entity.User;
 import com.example.lap_ecommerce.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,7 +32,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .map(review -> ProductReviewResponse.builder()
                         .comment(review.getComment())
                         .rating(review.getRating())
-                        .username(review.getUser().getUsername())
+                        .fullName(review.getUser().getFullName())
                         .createAt(review.getCreatedAt())
                         .build());
     }

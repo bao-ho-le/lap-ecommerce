@@ -1,6 +1,6 @@
 package com.example.lap_ecommerce.Cart.entity;
 
-import com.example.lap_ecommerce.user.User;
+import com.example.lap_ecommerce.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

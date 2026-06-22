@@ -21,6 +21,8 @@ import com.example.lap_ecommerce.exception.OutOfStockException;
 import com.example.lap_ecommerce.exception.ResourceNotFoundException;
 import com.example.lap_ecommerce.shared.product.ProductCatalogPort;
 import com.example.lap_ecommerce.shared.product.ProductSnapshot;
+import com.example.lap_ecommerce.user.entity.User;
+import com.example.lap_ecommerce.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,21 +36,21 @@ import java.util.List;
 @Transactional
 public class OrderServiceImpl implements OrderService {
 
-    private static final Long DEFAULT_USER_ID = 1L;
-
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final CartRepository cartRepository;
     private final ProductCatalogPort productCatalogPort;
     private final ProductRepository productRepository;
     private final CartItemRepository cartItemRepository;
+    private final UserRepository userRepository;
 
     @Override
-    public OrderResponse createOrder(OrderRequest request) {
+    public OrderResponse createOrder(String email, OrderRequest request) {
+        User user = getUserByEmail(email);
 
-        Cart cart = cartRepository.findByUserId(DEFAULT_USER_ID)
+        Cart cart = cartRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Cart not found for user id: " + DEFAULT_USER_ID));
+                        "Cart not found for user id: " + user.getId()));
 
         List<CartItem> cartItems = cart.getCartItems();
         if (cartItems.isEmpty()) {
@@ -63,7 +65,7 @@ public class OrderServiceImpl implements OrderService {
             .shippingAddress(request.getShippingAddress())
             .paymentMethod(request.getPaymentMethod())
             .status(OrderStatus.PENDING)
-            .userId(DEFAULT_USER_ID)
+            .user(user)
             .totalAmount(BigDecimal.ZERO)
             .build();
 
@@ -76,6 +78,7 @@ public class OrderServiceImpl implements OrderService {
                             "Product not found with id: " + cartItem.getProduct().getId()));
 
             if (cartItem.getQuantity() > product.getStockQty()) {
+
                 throw new OutOfStockException("Requested quantity exceeds available stock for product id: " + product.getId());
             }
 
@@ -95,10 +98,8 @@ public class OrderServiceImpl implements OrderService {
             itemsToSave.add(orderItem);
         }
 
-        // persist items
         orderItemRepository.saveAll(itemsToSave);
 
-        // update order total
         savedOrder.setTotalAmount(totalAmount);
         savedOrder = orderRepository.save(savedOrder);
 
@@ -108,10 +109,10 @@ public class OrderServiceImpl implements OrderService {
                     cartItem.getProduct().getId(),
                     cartItem.getQuantity()
             );
+
         }
 
-        // clear cart for user
-        cartRepository.deleteByUserId(DEFAULT_USER_ID);
+        cartRepository.deleteByUserId(user.getId());
 
         List<OrderItemResponse> orderItems = itemsToSave.stream()
             .map(it -> OrderItemResponse.builder()
@@ -129,8 +130,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<OrderResponse> getAllOrders() {
-        return orderRepository.findByUserId(DEFAULT_USER_ID).stream()
+    public List<OrderResponse> getAllOrders(String email) {
+        User user = getUserByEmail(email);
+        return orderRepository.findByUserId(user.getId()).stream()
             .map(order -> toOrderResponse(order, order.getItems().stream().map(it -> OrderItemResponse.builder()
                 .itemId(it.getItemId())
                 .productId(it.getProduct().getId())
@@ -144,8 +146,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public OrderResponse getOrderById(Long id) {
+    public OrderResponse getOrderById(String email, Long id) {
+        User user = getUserByEmail(email);
         Order order = findOrder(id);
+        
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new ResourceNotFoundException("Order not found with id: " + id);
+        }
+
         List<OrderItemResponse> items = order.getItems().stream().map(it -> OrderItemResponse.builder()
                 .itemId(it.getItemId())
                 .productId(it.getProduct().getId())
@@ -159,12 +167,18 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderResponse cancelOrder(Long id) {
+    public OrderResponse cancelOrder(String email, Long id) {
+        User user = getUserByEmail(email);
         Order order = findOrder(id);
+        
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new ResourceNotFoundException("Order not found with id: " + id);
+        }
+
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new InvalidOrderStateException("Only pending orders can be cancelled");
         }
-        // restore stock
+
         order.getItems().forEach(it -> productCatalogPort.restoreStock(it.getProduct().getId(), it.getQuantity()));
 
         order.setStatus(OrderStatus.CANCELLED);
@@ -187,6 +201,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
     }
 
+
     private OrderItemResponse toOrderItemResponse(OrderItem orderItem) {
 
         return OrderItemResponse.builder()
@@ -199,7 +214,6 @@ public class OrderServiceImpl implements OrderService {
                         .multiply(BigDecimal.valueOf(orderItem.getQuantity())))
                 .build();
     }
-    
 
     private OrderResponse toOrderResponse(Order order, List<OrderItemResponse> items) {
         return OrderResponse.builder()
@@ -211,5 +225,10 @@ public class OrderServiceImpl implements OrderService {
                 .orderDate(order.getOrderDate())
                 .items(items)
                 .build();
+    }
+
+    private User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found" + email));
     }
 }

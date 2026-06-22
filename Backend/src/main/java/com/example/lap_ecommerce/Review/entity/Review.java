@@ -1,7 +1,7 @@
 package com.example.lap_ecommerce.Review.entity;
 
 import com.example.lap_ecommerce.Product.entity.Product;
-import com.example.lap_ecommerce.user.User;
+import com.example.lap_ecommerce.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -32,11 +32,11 @@ public class Review {
     private Integer rating;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id", nullable=false, referencedColumnName = "id")
+    @JoinColumn(name="user_id", nullable=false)
     private User user;
 
     @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="product_id", nullable=false, referencedColumnName = "id")
+    @JoinColumn(name="product_id", nullable=false)
     private Product product;
 
 

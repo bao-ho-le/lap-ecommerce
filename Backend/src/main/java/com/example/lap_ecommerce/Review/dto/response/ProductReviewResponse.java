@@ -1,11 +1,6 @@
 package com.example.lap_ecommerce.Review.dto.response;
 
 
-import com.example.lap_ecommerce.Product.entity.Product;
-import com.example.lap_ecommerce.user.User;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,7 +19,7 @@ public class ProductReviewResponse {
     private Integer rating;
 
     private Long userId;
-    private String username;
+    private String fullName;
 
     private Long productId;
 
