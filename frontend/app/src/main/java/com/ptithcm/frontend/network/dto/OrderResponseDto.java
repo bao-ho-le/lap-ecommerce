@@ -19,9 +19,6 @@ public class OrderResponseDto {
     @SerializedName("shippingAddress")
     public String shippingAddress;
 
-    @SerializedName("paymentMethod")
-    public String paymentMethod;
-
     @SerializedName("orderDate")
     public String orderDate;
 

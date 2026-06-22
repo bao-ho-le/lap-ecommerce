@@ -1,75 +1,64 @@
 package com.ptithcm.frontend.models;
 
+import com.ptithcm.frontend.network.dto.ProductDto;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 
 public class Product implements Serializable {
 
-    private final long id;
-    private final String name;
-    private final String category;
-    private final BigDecimal price;
-    private final String cpu;
-    private final String ram;
-    private final String description;
-    private final int imageResId;
-    private final String imageUrl;
-    private final boolean featured;
+    public Long id;
 
-    public Product(long id, String name, String category, BigDecimal price, String cpu, String ram, String description, int imageResId, boolean featured) {
-        this(id, name, category, price, cpu, ram, description, imageResId, null, featured);
+    public String name;
+
+    public String description;
+
+    public BigDecimal price;
+
+    public Integer stockQty;
+
+    public String imageUrl;
+
+    public String cpu;
+
+    public Integer ramGb;
+
+    public Integer storageGb;
+
+    public String os;
+
+    public Float avgRating;
+
+    public Long categoryId;
+
+    public String categoryName;
+
+    public Long brandId;
+
+    public String brandName;
+
+    public Product() {
     }
+    private Product map(ProductDto dto) {
 
-    public Product(long id, String name, String category, BigDecimal price, String cpu, String ram, String description, int imageResId, String imageUrl, boolean featured) {
-        this.id = id;
-        this.name = name;
-        this.category = category;
-        this.price = price;
-        this.cpu = cpu;
-        this.ram = ram;
-        this.description = description;
-        this.imageResId = imageResId;
-        this.imageUrl = imageUrl;
-        this.featured = featured;
-    }
+        Product p = new Product();
 
-    public long getId() {
-        return id;
-    }
+        p.id = dto.id;
+        p.name = dto.name;
+        p.description = dto.description;
+        p.price = dto.price;
+        p.stockQty = dto.stockQty;
+        p.imageUrl = dto.imageUrl;
+        p.cpu = dto.cpu;
+        p.ramGb = dto.ramGb;
+        p.storageGb = dto.storageGb;
+        p.os = dto.os;
+        p.avgRating = dto.avgRating;
+        p.categoryId = dto.categoryId;
+        p.categoryName = dto.categoryName;
+        p.brandId = dto.brandId;
+        p.brandName = dto.brandName;
 
-    public String getName() {
-        return name;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public String getCpu() {
-        return cpu;
-    }
-
-    public String getRam() {
-        return ram;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public int getImageResId() {
-        return imageResId;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public boolean isFeatured() {
-        return featured;
+        return p;
     }
 }

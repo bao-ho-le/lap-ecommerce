@@ -1,50 +1,36 @@
 package com.ptithcm.frontend.network;
 
-import com.ptithcm.frontend.network.dto.CartResponseDto;
-import com.ptithcm.frontend.network.dto.OrderRequestDto;
-import com.ptithcm.frontend.network.dto.OrderResponseDto;
-import com.ptithcm.frontend.network.dto.UpdateQuantityRequestDto;
+import com.ptithcm.frontend.network.dto.*;
 
+import java.util.List;
 import retrofit2.Call;
-import retrofit2.http.Body;
-import retrofit2.http.DELETE;
-import retrofit2.http.GET;
-import retrofit2.http.POST;
-import retrofit2.http.PUT;
-import retrofit2.http.Path;
+import retrofit2.http.*;
 
 public interface ApiService {
 
-    @GET("cart")
-    Call<CartResponseDto> getCart();
-
     @GET("products")
-    Call<java.util.List<com.ptithcm.frontend.network.dto.ProductDto>> getProducts();
+    Call<List<ProductDto>> getProducts(
+            @Query("q") String query,
+            @Query("categoryId") Integer categoryId,
+            @Query("brandId") Integer brandId,
+            @Query("sort") String sort
+    );
 
     @GET("products/{id}")
-    Call<com.ptithcm.frontend.network.dto.ProductDto> getProductById(@Path("id") long id);
+    Call<ProductDto> getProductById(@Path("id") Long id);
 
-    @PUT("cart/{id}/quantity")
-    Call<CartResponseDto> updateQuantity(@Path("id") int cartId, @Body UpdateQuantityRequestDto body);
+    @GET("categories")
+    Call<List<CategoryDto>> getCategories();
 
-    @DELETE("cart/{id}")
-    Call<CartResponseDto> deleteItem(@Path("id") int cartId);
-
-    @DELETE("cart/clear")
-    Call<Void> clearCart();
+    @GET("brands")
+    Call<List<BrandDto>> getBrands();
 
     @POST("orders")
     Call<OrderResponseDto> createOrder(@Body OrderRequestDto body);
 
-    @POST("cart/add")
-    Call<CartResponseDto> addToCart(@Body com.ptithcm.frontend.network.dto.CartAddRequestDto body);
+    @POST("payments/cod")
+    Call<PaymentResponseDto> payCod(@Body PaymentRequestDto body);
 
-    @GET("orders")
-    Call<java.util.List<OrderResponseDto>> getOrders();
-
-    @GET("orders/{id}")
-    Call<OrderResponseDto> getOrderById(@Path("id") long id);
-
-    @PUT("orders/{id}/cancel")
-    Call<OrderResponseDto> cancelOrder(@Path("id") long id);
+    @POST("payments/vnpay")
+    Call<PaymentResponseDto> payVNPay(@Body PaymentRequestDto body);
 }

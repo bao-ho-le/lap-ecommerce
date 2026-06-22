@@ -2,10 +2,7 @@ package com.ptithcm.frontend.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.ptithcm.frontend.databinding.ActivityOrderSuccessBinding;
 
 public class OrderSuccessActivity extends AppCompatActivity {
@@ -13,18 +10,22 @@ public class OrderSuccessActivity extends AppCompatActivity {
     private ActivityOrderSuccessBinding binding;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityOrderSuccessBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        binding.backToHomeButton.setOnClickListener(v -> goHome());
-    }
+        String orderId = getIntent().getStringExtra("order_id");
+        String status = getIntent().getStringExtra("payment_status");
 
-    private void goHome() {
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
+        binding.orderIdText.setText("Transaction ID: " + orderId);
+        binding.paymentStatusText.setText("Status: " + status);
+
+        binding.backHomeButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            finish();
+        });
     }
 }
