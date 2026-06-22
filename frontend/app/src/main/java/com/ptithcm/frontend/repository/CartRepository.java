@@ -1,5 +1,7 @@
 package com.ptithcm.frontend.repository;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 
 import com.ptithcm.frontend.network.ApiClient;
@@ -23,13 +25,13 @@ public class CartRepository {
 
     private final ApiService apiService;
 
-    private CartRepository() {
-        apiService = ApiClient.getApiService();
+    private CartRepository(Context context) {
+        apiService = ApiClient.getApiService(context);
     }
 
-    public static synchronized CartRepository getInstance() {
+    public static synchronized CartRepository getInstance(Context context) {
         if (instance == null) {
-            instance = new CartRepository();
+            instance = new CartRepository(context);
         }
         return instance;
     }
@@ -89,8 +91,14 @@ public class CartRepository {
 
     private CartResponseDto normalize(CartResponseDto response) {
         CartResponseDto normalized = new CartResponseDto();
-        normalized.items = response.items == null ? new ArrayList<>() : new ArrayList<>(response.items);
-        normalized.totalCartAmount = response.totalCartAmount == null ? BigDecimal.ZERO : response.totalCartAmount;
+        normalized.items = response.items == null
+                ? new ArrayList<>()
+                : new ArrayList<>(response.items);
+
+        normalized.totalCartAmount = response.totalCartAmount == null
+                ? BigDecimal.ZERO
+                : response.totalCartAmount;
+
         return normalized;
     }
 

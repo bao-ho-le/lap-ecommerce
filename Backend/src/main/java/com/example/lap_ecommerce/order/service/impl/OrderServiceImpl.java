@@ -225,6 +225,13 @@ public class OrderServiceImpl implements OrderService {
                 .build();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public boolean hasUserPurchasedProduct(String email, Long productId) {
+        User user = getUserByEmail(email);
+        return orderItemRepository.existsByOrder_User_IdAndProduct_Id(user.getId(), productId);
+    }
+
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found" + email));

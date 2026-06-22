@@ -11,9 +11,6 @@ import lombok.Setter;
 public class CreateReviewRequest {
 
     @NotNull
-    private Long userId;
-
-    @NotNull
     @Min(1)
     @Max(5)
     private Integer rating;

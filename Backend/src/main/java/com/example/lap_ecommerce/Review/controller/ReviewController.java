@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -35,16 +36,18 @@ public class ReviewController {
 
     @PostMapping("/products/{productId}/reviews")
     public ResponseEntity<CreateReviewResponse> createReview(
+            Authentication authentication,
             @PathVariable Long productId,
-            @Valid @RequestBody CreateReviewRequest createReviewRequest){
+            @Valid @RequestBody CreateReviewRequest createReviewRequest) {
 
-        return ResponseEntity.ok(reviewService.createReview(productId, createReviewRequest));
+        String email = authentication.getName();
+        return ResponseEntity.ok(reviewService.createReview(email, productId, createReviewRequest));
     }
 
-
     @DeleteMapping("/reviews/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        reviewService.deleteReview(id);
+    public ResponseEntity<Void> delete(Authentication authentication, @PathVariable Long id) {
+        String email = authentication.getName();
+        reviewService.deleteReview(email, id);
         return ResponseEntity.noContent().build();
     }
 }

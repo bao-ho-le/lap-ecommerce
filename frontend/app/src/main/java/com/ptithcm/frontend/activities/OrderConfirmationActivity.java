@@ -1,5 +1,6 @@
 package com.ptithcm.frontend.activities;
 
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -39,7 +40,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         binding = ActivityOrderConfirmationBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        orderRepository = OrderRepository.getInstance();
+        orderRepository = OrderRepository.getInstance(this);
         readIntentData();
         bindStaticContent();
         bindSummary();

@@ -15,6 +15,15 @@ public class MainActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_main);
 
 		MaterialButton openCartButton = findViewById(R.id.openCartButton);
-		openCartButton.setOnClickListener(v -> startActivity(new Intent(this, CartActivity.class)));
+
+		openCartButton.setOnClickListener(v ->
+                startActivity(new Intent(this, CartActivity.class)));
+
+        MaterialButton openReviewButton = findViewById(R.id.openReviewButton);
+        openReviewButton.setOnClickListener(v ->
+                startActivity(new Intent(this, ReviewActivity.class)));
+
+		MaterialButton openProfileButton = findViewById(R.id.openProfileButton);
+		openProfileButton.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
 	}
 }

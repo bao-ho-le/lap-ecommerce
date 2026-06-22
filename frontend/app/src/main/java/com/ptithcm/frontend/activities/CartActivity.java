@@ -40,7 +40,7 @@ public class CartActivity extends AppCompatActivity {
         binding = ActivityCartBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        cartRepository = CartRepository.getInstance();
+        cartRepository = CartRepository.getInstance(this);
         adapter = new CartAdapter(new CartAdapter.CartActionListener() {
             @Override
             public void onIncrease(CartItemDto item) {
@@ -98,9 +98,19 @@ public class CartActivity extends AppCompatActivity {
     }
 
     private void renderCart(CartResponseDto response) {
-        List<CartItemDto> items = response == null || response.items == null ? Collections.emptyList() : response.items;
+
+        // Nếu null thì lấy list rỗng, giúp tránh crash
+        List<CartItemDto> items = response == null || response.items == null
+                ? Collections.emptyList()
+                : response.items;
+
         adapter.submitList(items);
-        currentTotal = response == null || response.totalCartAmount == null ? calculateTotal(items) : response.totalCartAmount;
+
+        // Nếu backend có trả về tổng tiền nếu không thì tự tính
+        currentTotal = response == null || response.totalCartAmount == null
+                ? calculateTotal(items)
+                : response.totalCartAmount;
+
         updateTotalLabel();
         renderEmptyState(items.isEmpty());
         setLoading(false);
@@ -153,6 +163,10 @@ public class CartActivity extends AppCompatActivity {
             return;
         }
 
+        // Backup nếu xoá thất bại
+        int position = adapter.getPositionById(item.cartId);
+        CartItemDto backup = item;
+
         adapter.removeItem(item.cartId);
         currentTotal = calculateTotal(adapter.getItems());
         updateTotalLabel();
@@ -168,8 +182,11 @@ public class CartActivity extends AppCompatActivity {
             @Override
             public void onError(String message) {
                 runOnUiThread(() -> {
-                    Toast.makeText(CartActivity.this, message, Toast.LENGTH_LONG).show();
-                    loadCart();
+                    adapter.restoreItem(position, backup);
+                    currentTotal = calculateTotal(adapter.getItems());
+                    updateTotalLabel();
+                    renderEmptyState(false);
+                    setLoading(false);
                 });
             }
         });
@@ -182,7 +199,7 @@ public class CartActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, OrderConfirmationActivity.class);
         intent.putExtra(EXTRA_CART_TOTAL, currentTotal.toPlainString());
-        intent.putExtra(EXTRA_CART_ITEMS, (Serializable) new ArrayList<>(adapter.getItems()));
+        intent.putExtra(EXTRA_CART_ITEMS, new ArrayList<>(adapter.getItems()));
         startActivity(intent);
     }
 
@@ -190,7 +207,6 @@ public class CartActivity extends AppCompatActivity {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
-        finish();
     }
 
     private BigDecimal calculateTotal(List<CartItemDto> items) {

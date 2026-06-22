@@ -1,5 +1,7 @@
 package com.ptithcm.frontend.repository;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 
 import com.ptithcm.frontend.network.ApiClient;
@@ -19,13 +21,13 @@ public class OrderRepository {
 
     private final ApiService apiService;
 
-    private OrderRepository() {
-        apiService = ApiClient.getApiService();
+    private OrderRepository(Context context) {
+        apiService = ApiClient.getApiService(context);
     }
 
-    public static synchronized OrderRepository getInstance() {
+    public static synchronized OrderRepository getInstance(Context context) {
         if (instance == null) {
-            instance = new OrderRepository();
+            instance = new OrderRepository(context);
         }
         return instance;
     }

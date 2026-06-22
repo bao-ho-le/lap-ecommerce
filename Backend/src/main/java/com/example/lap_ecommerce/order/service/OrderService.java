@@ -13,4 +13,6 @@ public interface OrderService {
     OrderResponse getOrderById(String email, Long id);
 
     OrderResponse cancelOrder(String email, Long id);
+
+    boolean hasUserPurchasedProduct(String email, Long productId);
 }

@@ -71,6 +71,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email" + request.getEmail()));
 
+
         return new AuthResponse(token, mapToDto(user));
     }
 
@@ -78,6 +79,7 @@ public class AuthServiceImpl implements AuthService {
     public UserProfileDto getProfile(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email" + email));
+
         return mapToDto(user);
     }
 

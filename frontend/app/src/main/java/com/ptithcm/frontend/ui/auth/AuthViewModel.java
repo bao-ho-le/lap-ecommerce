@@ -1,4 +1,4 @@
-package com.ptithcm.frontend.ui.profile;
+package com.ptithcm.frontend.ui.auth;
 
 import android.content.Context;
 
@@ -6,71 +6,72 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.ptithcm.frontend.network.dto.UserProfileDto;
+import com.ptithcm.frontend.network.dto.AuthResponseDto;
+import com.ptithcm.frontend.network.dto.RegisterRequestDto;
 import com.ptithcm.frontend.repository.AuthRepository;
 
-public class ProfileViewModel extends ViewModel {
+public class AuthViewModel extends ViewModel {
     private AuthRepository authRepository;
 
-    private final MutableLiveData<UserProfileDto> profileResult = new MutableLiveData<>();
-    private final MutableLiveData<String> profileError = new MutableLiveData<>();
+    private final MutableLiveData<AuthResponseDto> authResult = new MutableLiveData<>();
+    private final MutableLiveData<String> authError = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
 
-    public ProfileViewModel() {
+    public AuthViewModel() {
         authRepository = null;
     }
 
-    public LiveData<UserProfileDto> getProfileResult() {
-        return profileResult;
+    public LiveData<AuthResponseDto> getAuthResult() {
+        return authResult;
     }
 
-    public LiveData<String> getProfileError() {
-        return profileError;
+    public LiveData<String> getAuthError() {
+        return authError;
     }
 
     public LiveData<Boolean> getIsLoading() {
         return isLoading;
     }
 
-    public void fetchProfile(Context context) {
+    public void login(Context context, String email, String password) {
 
         if (authRepository == null) {
             authRepository = AuthRepository.getInstance(context);
         }
 
         isLoading.setValue(true);
-        authRepository.getProfile(new AuthRepository.AuthCallback<UserProfileDto>() {
+        authRepository.login(email, password, new AuthRepository.AuthCallback<AuthResponseDto>() {
             @Override
-            public void onSuccess(UserProfileDto result) {
+            public void onSuccess(AuthResponseDto result) {
                 isLoading.setValue(false);
-                profileResult.setValue(result);
+                authResult.setValue(result);
             }
 
             @Override
             public void onError(String error) {
                 isLoading.setValue(false);
-                profileError.setValue(error);
+                authError.setValue(error);
             }
         });
     }
 
-    public void updateProfile(Context context, UserProfileDto request) {
+    public void register(Context context, RegisterRequestDto request) {
         if (authRepository == null) {
             authRepository = AuthRepository.getInstance(context);
         }
 
         isLoading.setValue(true);
-        authRepository.updateProfile(request, new AuthRepository.AuthCallback<UserProfileDto>() {
+        authRepository.register(request, new AuthRepository.AuthCallback<AuthResponseDto>() {
             @Override
-            public void onSuccess(UserProfileDto result) {
+            public void onSuccess(AuthResponseDto result) {
                 isLoading.setValue(false);
-                profileResult.setValue(result);
+                authResult.setValue(result);
             }
 
             @Override
             public void onError(String error) {
                 isLoading.setValue(false);
-                profileError.setValue(error);
+                authError.setValue(error);
             }
         });
     }

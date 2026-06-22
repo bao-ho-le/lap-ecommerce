@@ -1,13 +1,15 @@
 package com.example.lap_ecommerce.Review.service.impl;
 
-import com.example.lap_ecommerce.product.entity.Product;
-import com.example.lap_ecommerce.product.repository.ProductRepository;
+import com.example.lap_ecommerce.Order.service.OrderService;
+import com.example.lap_ecommerce.Product.entity.Product;
+import com.example.lap_ecommerce.Product.repository.ProductRepository;
 import com.example.lap_ecommerce.Review.dto.request.CreateReviewRequest;
 import com.example.lap_ecommerce.Review.dto.response.CreateReviewResponse;
 import com.example.lap_ecommerce.Review.dto.response.ProductReviewResponse;
 import com.example.lap_ecommerce.Review.entity.Review;
 import com.example.lap_ecommerce.Review.repository.ReviewRepository;
 import com.example.lap_ecommerce.Review.service.ReviewService;
+import com.example.lap_ecommerce.exception.ForbiddenException;
 import com.example.lap_ecommerce.exception.ResourceNotFoundException;
 import com.example.lap_ecommerce.user.entity.User;
 import com.example.lap_ecommerce.user.repository.UserRepository;
@@ -24,9 +26,10 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewRepository reviewRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final OrderService orderService;
 
     @Override
-    public Page<ProductReviewResponse> getProductReviews(Long productId, Pageable pageable){
+    public Page<ProductReviewResponse> getProductReviews(Long productId, Pageable pageable) {
 
         return reviewRepository.findByProductId(productId, pageable)
                 .map(review -> ProductReviewResponse.builder()
@@ -38,13 +41,17 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public CreateReviewResponse createReview(Long productId, CreateReviewRequest createReviewRequest){
+    public CreateReviewResponse createReview(String email, Long productId, CreateReviewRequest createReviewRequest) {
+
+        if (!orderService.hasUserPurchasedProduct(email, productId)) {
+            throw new ForbiddenException("You must purchase this product to review");
+        }
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
 
-        User user = userRepository.findById(createReviewRequest.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + email));
 
         Review newReview = Review.builder()
                 .product(product)
@@ -65,11 +72,15 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public void deleteReview(Long reviewId) {
+    public void deleteReview(String email, Long reviewId) {
 
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Review not found with id: " + reviewId));
+
+        if (!review.getUser().getEmail().equals(email)) {
+            throw new ForbiddenException("You are not allowed to delete this review");
+        }
 
         reviewRepository.delete(review);
     }
