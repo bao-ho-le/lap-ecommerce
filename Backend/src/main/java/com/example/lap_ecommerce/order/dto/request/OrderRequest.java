@@ -1,0 +1,18 @@
+package com.example.lap_ecommerce.order.dto.request;
+
+import com.example.lap_ecommerce.order.entity.PaymentMethod;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class OrderRequest {
+
+    @NotBlank
+    private String shippingAddress;
+
+    @NotNull
+    private PaymentMethod paymentMethod;
+}

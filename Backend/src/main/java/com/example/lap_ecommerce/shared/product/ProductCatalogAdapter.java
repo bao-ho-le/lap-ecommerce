@@ -1,7 +1,7 @@
 package com.example.lap_ecommerce.shared.product;
 
-import com.example.lap_ecommerce.Product.entity.Product;
-import com.example.lap_ecommerce.Product.repository.ProductRepository;
+import com.example.lap_ecommerce.product.entity.Product;
+import com.example.lap_ecommerce.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

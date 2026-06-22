@@ -1,7 +1,7 @@
 package com.example.lap_ecommerce.Review.service.impl;
 
-import com.example.lap_ecommerce.Product.entity.Product;
-import com.example.lap_ecommerce.Product.repository.ProductRepository;
+import com.example.lap_ecommerce.product.entity.Product;
+import com.example.lap_ecommerce.product.repository.ProductRepository;
 import com.example.lap_ecommerce.Review.dto.request.CreateReviewRequest;
 import com.example.lap_ecommerce.Review.dto.response.CreateReviewResponse;
 import com.example.lap_ecommerce.Review.dto.response.ProductReviewResponse;

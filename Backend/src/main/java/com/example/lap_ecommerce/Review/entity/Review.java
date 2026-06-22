@@ -1,6 +1,6 @@
 package com.example.lap_ecommerce.Review.entity;
 
-import com.example.lap_ecommerce.Product.entity.Product;
+import com.example.lap_ecommerce.product.entity.Product;
 import com.example.lap_ecommerce.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
