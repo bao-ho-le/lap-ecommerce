@@ -53,7 +53,7 @@ public class ReviewFragment extends Fragment {
 
         productId = (long) getArguments().getInt("product_id", -1);
 
-        reviewRepository = ReviewRepository.getInstance(); // sau này đổi sang API
+        reviewRepository = ReviewRepository.getInstance(requireContext()); // sau này đổi sang API
 
         setupRecycler();
         setupScroll();

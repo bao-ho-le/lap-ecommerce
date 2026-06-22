@@ -1,5 +1,7 @@
 package com.ptithcm.frontend.ui.auth;
 
+import android.content.Context;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -9,14 +11,14 @@ import com.ptithcm.frontend.network.dto.RegisterRequestDto;
 import com.ptithcm.frontend.repository.AuthRepository;
 
 public class AuthViewModel extends ViewModel {
-    private final AuthRepository authRepository;
+    private AuthRepository authRepository;
 
     private final MutableLiveData<AuthResponseDto> authResult = new MutableLiveData<>();
     private final MutableLiveData<String> authError = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
 
     public AuthViewModel() {
-        authRepository = AuthRepository.getInstance();
+        authRepository = null;
     }
 
     public LiveData<AuthResponseDto> getAuthResult() {
@@ -31,7 +33,12 @@ public class AuthViewModel extends ViewModel {
         return isLoading;
     }
 
-    public void login(String email, String password) {
+    public void login(Context context, String email, String password) {
+
+        if (authRepository == null) {
+            authRepository = AuthRepository.getInstance(context);
+        }
+
         isLoading.setValue(true);
         authRepository.login(email, password, new AuthRepository.AuthCallback<AuthResponseDto>() {
             @Override
@@ -48,7 +55,11 @@ public class AuthViewModel extends ViewModel {
         });
     }
 
-    public void register(RegisterRequestDto request) {
+    public void register(Context context, RegisterRequestDto request) {
+        if (authRepository == null) {
+            authRepository = AuthRepository.getInstance(context);
+        }
+
         isLoading.setValue(true);
         authRepository.register(request, new AuthRepository.AuthCallback<AuthResponseDto>() {
             @Override

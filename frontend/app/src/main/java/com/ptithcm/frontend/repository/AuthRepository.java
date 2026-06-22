@@ -1,5 +1,7 @@
 package com.ptithcm.frontend.repository;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 
 import com.ptithcm.frontend.network.ApiClient;
@@ -17,12 +19,12 @@ public class AuthRepository {
     private static AuthRepository instance;
     private final ApiService api;
 
-    private AuthRepository() {
-        api = ApiClient.getApiService();
+    private AuthRepository(Context context) {
+        api = ApiClient.getApiService(context);
     }
 
-    public static AuthRepository getInstance() {
-        if (instance == null) instance = new AuthRepository();
+    public static AuthRepository getInstance(Context context) {
+        if (instance == null) instance = new AuthRepository(context);
         return instance;
     }
 

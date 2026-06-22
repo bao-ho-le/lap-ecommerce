@@ -1,5 +1,6 @@
 package com.ptithcm.frontend.repository;
 
+import android.content.Context;
 import android.os.Looper;
 
 import com.ptithcm.frontend.network.ApiClient;
@@ -15,13 +16,13 @@ public class ReviewRepository {
     private static ReviewRepository instance;
     private final ApiService apiService;
 
-    private ReviewRepository() {
-        apiService = ApiClient.getApiService();
+    private ReviewRepository(Context context) {
+        apiService = ApiClient.getApiService(context);
     }
 
-    public static synchronized ReviewRepository getInstance() {
+    public static synchronized ReviewRepository getInstance(Context context) {
         if (instance == null) {
-            instance = new ReviewRepository();
+            instance = new ReviewRepository(context);
         }
         return instance;
     }

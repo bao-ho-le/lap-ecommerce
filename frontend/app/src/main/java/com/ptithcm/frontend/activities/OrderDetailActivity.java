@@ -64,7 +64,7 @@ public class OrderDetailActivity extends BaseActivity {
 
     private void fetchOrderDetails() {
         progressBar.setVisibility(View.VISIBLE);
-        ApiClient.getApiService().getOrderById(orderId).enqueue(new Callback<OrderResponseDto>() {
+        ApiClient.getApiService(this).getOrderById(orderId).enqueue(new Callback<OrderResponseDto>() {
             @Override
             public void onResponse(Call<OrderResponseDto> call, Response<OrderResponseDto> response) {
                 progressBar.setVisibility(View.GONE);

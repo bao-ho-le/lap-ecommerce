@@ -50,7 +50,7 @@ public class RegisterActivity extends BaseActivity {
             }
 
             RegisterRequestDto request = new RegisterRequestDto(fullName, email, password, phone, "");
-            authViewModel.register(request);
+            authViewModel.register(this, request);
         });
 
         authViewModel.getIsLoading().observe(this, isLoading -> {

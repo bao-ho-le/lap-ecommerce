@@ -39,7 +39,7 @@ public class ProfileActivity extends BaseActivity {
         }
 
         // Fetch profile
-        profileViewModel.fetchProfile();
+        profileViewModel.fetchProfile(this);
 
         binding.btnSave.setOnClickListener(v -> {
             String fullName = binding.etFullName.getText().toString().trim();
@@ -52,7 +52,7 @@ public class ProfileActivity extends BaseActivity {
             }
 
             UserProfileDto request = new UserProfileDto(fullName, phone, address);
-            profileViewModel.updateProfile(request);
+            profileViewModel.updateProfile(this, request);
         });
 
         binding.btnLogout.setOnClickListener(v -> {

@@ -35,6 +35,11 @@ public class LoginActivity extends BaseActivity {
             binding.etEmail.setAdapter(adapter);
         }
 
+        binding.btnRegister.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            startActivity(intent);
+        });
+
         binding.btnLogin.setOnClickListener(v -> {
             String email = binding.etEmail.getText().toString().trim();
             String password = binding.etPassword.getText().toString().trim();
@@ -44,7 +49,7 @@ public class LoginActivity extends BaseActivity {
                 return;
             }
 
-            authViewModel.login(email, password);
+            authViewModel.login(this, email, password);
         });
 
         authViewModel.getIsLoading().observe(this, isLoading -> {

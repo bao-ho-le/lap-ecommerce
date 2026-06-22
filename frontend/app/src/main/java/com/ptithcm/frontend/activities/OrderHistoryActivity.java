@@ -48,7 +48,7 @@ public class OrderHistoryActivity extends BaseActivity {
 
     private void fetchOrders() {
         progressBar.setVisibility(View.VISIBLE);
-        ApiClient.getApiService().getOrders().enqueue(new Callback<List<OrderResponseDto>>() {
+        ApiClient.getApiService(this).getOrders().enqueue(new Callback<List<OrderResponseDto>>() {
             @Override
             public void onResponse(Call<List<OrderResponseDto>> call, Response<List<OrderResponseDto>> response) {
                 progressBar.setVisibility(View.GONE);

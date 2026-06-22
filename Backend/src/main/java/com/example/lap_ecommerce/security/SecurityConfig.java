@@ -48,6 +48,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("api/v1/auth/register", "api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products/*/reviews").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/products/*/reviews").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/reviews/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
                         .anyRequest().authenticated()
                 );

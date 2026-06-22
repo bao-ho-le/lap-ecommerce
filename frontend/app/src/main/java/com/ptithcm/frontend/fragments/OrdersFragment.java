@@ -54,7 +54,7 @@ public class OrdersFragment extends Fragment {
     }
 
     private void loadOrders() {
-        OrderRepository.getInstance().getOrders(new RepositoryCallback<>() {
+        OrderRepository.getInstance(requireContext()).getOrders(new RepositoryCallback<>() {
             @Override
             public void onSuccess(List<OrderResponseDto> result) {
 

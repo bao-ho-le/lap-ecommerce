@@ -40,7 +40,7 @@ public class CartActivity extends AppCompatActivity {
         binding = ActivityCartBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        cartRepository = CartRepository.getInstance();
+        cartRepository = CartRepository.getInstance(this);
         adapter = new CartAdapter(new CartAdapter.CartActionListener() {
             @Override
             public void onIncrease(CartItemDto item) {
