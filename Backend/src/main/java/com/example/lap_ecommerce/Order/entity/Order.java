@@ -46,10 +46,6 @@ public class Order {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String shippingAddress;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private PaymentMethod paymentMethod;
-
     @Column(nullable = false)
     private LocalDateTime orderDate;
 

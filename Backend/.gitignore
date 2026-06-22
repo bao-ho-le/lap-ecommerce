@@ -31,3 +31,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# =========================
+# Postman
+# =========================
+
+# Local Postman files
+.postman/
+postman/
+!postman/collections/
+!postman/collections/**
+!postman/environments/
+!postman/environments/**

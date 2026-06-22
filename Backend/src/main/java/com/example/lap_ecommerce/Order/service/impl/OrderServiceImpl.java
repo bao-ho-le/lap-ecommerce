@@ -50,7 +50,6 @@ public class OrderServiceImpl implements OrderService {
 
         Order order = Order.builder()
             .shippingAddress(request.getShippingAddress())
-            .paymentMethod(request.getPaymentMethod())
             .status(OrderStatus.PENDING)
             .userId(DEFAULT_USER_ID)
             .totalAmount(BigDecimal.ZERO)
@@ -197,7 +196,6 @@ public class OrderServiceImpl implements OrderService {
                 .totalAmount(order.getTotalAmount())
                 .status(order.getStatus())
                 .shippingAddress(order.getShippingAddress())
-                .paymentMethod(order.getPaymentMethod())
                 .orderDate(order.getOrderDate())
                 .items(items)
                 .build();
