@@ -1,37 +1,66 @@
 package com.ptithcm.frontend.ui.profile;
 
-import android.app.Application;
-
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
-import com.ptithcm.frontend.models.ProfileOption;
-import com.ptithcm.frontend.repository.MockEcommerceRepository;
+import com.ptithcm.frontend.network.dto.UserProfileDto;
+import com.ptithcm.frontend.repository.AuthRepository;
 
-import java.util.List;
+public class ProfileViewModel extends ViewModel {
+    private final AuthRepository authRepository;
 
-public class ProfileViewModel extends AndroidViewModel {
+    private final MutableLiveData<UserProfileDto> profileResult = new MutableLiveData<>();
+    private final MutableLiveData<String> profileError = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
 
-    private final MockEcommerceRepository repository;
-    private final MutableLiveData<List<ProfileOption>> options = new MutableLiveData<>();
-
-    public ProfileViewModel(@NonNull Application application) {
-        super(application);
-        repository = MockEcommerceRepository.getInstance(application);
-        options.setValue(repository.getProfileOptions());
+    public ProfileViewModel() {
+        authRepository = AuthRepository.getInstance();
     }
 
-    public LiveData<List<ProfileOption>> getOptions() {
-        return options;
+    public LiveData<UserProfileDto> getProfileResult() {
+        return profileResult;
     }
 
-    public String getUserName() {
-        return repository.getUserName();
+    public LiveData<String> getProfileError() {
+        return profileError;
     }
 
-    public String getUserEmail() {
-        return repository.getUserEmail();
+    public LiveData<Boolean> getIsLoading() {
+        return isLoading;
+    }
+
+    public void fetchProfile() {
+        isLoading.setValue(true);
+        authRepository.getProfile(new AuthRepository.AuthCallback<UserProfileDto>() {
+            @Override
+            public void onSuccess(UserProfileDto result) {
+                isLoading.setValue(false);
+                profileResult.setValue(result);
+            }
+
+            @Override
+            public void onError(String error) {
+                isLoading.setValue(false);
+                profileError.setValue(error);
+            }
+        });
+    }
+
+    public void updateProfile(UserProfileDto request) {
+        isLoading.setValue(true);
+        authRepository.updateProfile(request, new AuthRepository.AuthCallback<UserProfileDto>() {
+            @Override
+            public void onSuccess(UserProfileDto result) {
+                isLoading.setValue(false);
+                profileResult.setValue(result);
+            }
+
+            @Override
+            public void onError(String error) {
+                isLoading.setValue(false);
+                profileError.setValue(error);
+            }
+        });
     }
 }

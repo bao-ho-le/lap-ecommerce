@@ -16,5 +16,8 @@ public class MainActivity extends AppCompatActivity {
 
 		MaterialButton openCartButton = findViewById(R.id.openCartButton);
 		openCartButton.setOnClickListener(v -> startActivity(new Intent(this, CartActivity.class)));
+
+		MaterialButton openProfileButton = findViewById(R.id.openProfileButton);
+		openProfileButton.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
 	}
 }
