@@ -11,6 +11,8 @@ import com.example.lap_ecommerce.exception.OutOfStockException;
 import com.example.lap_ecommerce.exception.ResourceNotFoundException;
 import com.example.lap_ecommerce.shared.product.ProductCatalogPort;
 import com.example.lap_ecommerce.shared.product.ProductSnapshot;
+import com.example.lap_ecommerce.user.entity.User;
+import com.example.lap_ecommerce.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,23 +25,29 @@ import java.util.List;
 @Transactional
 public class CartServiceImpl implements CartService {
 
-    private static final Long DEFAULT_USER_ID = 1L;
-
     private final CartRepository cartRepository;
     private final ProductCatalogPort productCatalogPort;
+    private final UserRepository userRepository;
 
-    @Override
-    @Transactional(readOnly = true)
-    public CartResponse getCart() {
-        return buildCartResponse(cartRepository.findByUserId(DEFAULT_USER_ID));
+    private User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
     }
 
     @Override
-    public CartResponse addToCart(CartAddRequest request) {
+    @Transactional(readOnly = true)
+    public CartResponse getCart(String email) {
+        User user = getUserByEmail(email);
+        return buildCartResponse(cartRepository.findByUserId(user.getUserId()));
+    }
+
+    @Override
+    public CartResponse addToCart(String email, CartAddRequest request) {
+        User user = getUserByEmail(email);
         ProductSnapshot product = getExistingProduct(request.getProductId());
         validateStock(product, request.getQuantity());
 
-        Cart cartItem = cartRepository.findByUserIdAndProductId(DEFAULT_USER_ID, request.getProductId())
+        Cart cartItem = cartRepository.findByUserIdAndProductId(user.getUserId(), request.getProductId())
                 .map(existing -> {
                     int newQuantity = existing.getQuantity() + request.getQuantity();
                     validateStock(product, newQuantity);
@@ -47,43 +55,46 @@ public class CartServiceImpl implements CartService {
                     return existing;
                 })
                 .orElseGet(() -> Cart.builder()
-                        .userId(DEFAULT_USER_ID)
+                        .userId(user.getUserId())
                         .productId(request.getProductId())
                         .quantity(request.getQuantity())
                         .build());
 
         cartRepository.save(cartItem);
-        return getCart();
+        return getCart(email);
     }
 
     @Override
-    public CartResponse updateQuantity(Integer cartId, UpdateCartQuantityRequest request) {
-        Cart cartItem = findCartItem(cartId);
+    public CartResponse updateQuantity(String email, Integer cartId, UpdateCartQuantityRequest request) {
+        User user = getUserByEmail(email);
+        Cart cartItem = findCartItem(cartId, user.getUserId());
         ProductSnapshot product = getExistingProduct(cartItem.getProductId());
         validateStock(product, request.getQuantity());
 
         cartItem.setQuantity(request.getQuantity());
         cartRepository.save(cartItem);
-        return getCart();
+        return getCart(email);
     }
 
     @Override
-    public CartResponse deleteItem(Integer cartId) {
-        Cart cartItem = findCartItem(cartId);
+    public CartResponse deleteItem(String email, Integer cartId) {
+        User user = getUserByEmail(email);
+        Cart cartItem = findCartItem(cartId, user.getUserId());
         cartRepository.delete(cartItem);
-        return getCart();
+        return getCart(email);
     }
 
     @Override
-    public void clearCart() {
-        cartRepository.deleteByUserId(DEFAULT_USER_ID);
+    public void clearCart(String email) {
+        User user = getUserByEmail(email);
+        cartRepository.deleteByUserId(user.getUserId());
     }
 
-    private Cart findCartItem(Integer cartId) {
+    private Cart findCartItem(Integer cartId, Long userId) {
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found with id: " + cartId));
 
-        if (!DEFAULT_USER_ID.equals(cart.getUserId())) {
+        if (!userId.equals(cart.getUserId())) {
             throw new ResourceNotFoundException("Cart item not found with id: " + cartId);
         }
 

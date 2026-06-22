@@ -5,13 +5,13 @@ import com.example.lap_ecommerce.Cart.dto.CartResponse;
 import com.example.lap_ecommerce.Cart.dto.UpdateCartQuantityRequest;
 
 public interface CartService {
-    CartResponse getCart();
+    CartResponse getCart(String email);
 
-    CartResponse addToCart(CartAddRequest request);
+    CartResponse addToCart(String email, CartAddRequest request);
 
-    CartResponse updateQuantity(Integer cartId, UpdateCartQuantityRequest request);
+    CartResponse updateQuantity(String email, Integer cartId, UpdateCartQuantityRequest request);
 
-    CartResponse deleteItem(Integer cartId);
+    CartResponse deleteItem(String email, Integer cartId);
 
-    void clearCart();
+    void clearCart(String email);
 }

@@ -6,11 +6,11 @@ import com.example.lap_ecommerce.Order.dto.OrderResponse;
 import java.util.List;
 
 public interface OrderService {
-    OrderResponse createOrder(OrderRequest request);
+    OrderResponse createOrder(String email, OrderRequest request);
 
-    List<OrderResponse> getAllOrders();
+    List<OrderResponse> getAllOrders(String email);
 
-    OrderResponse getOrderById(Long id);
+    OrderResponse getOrderById(String email, Long id);
 
-    OrderResponse cancelOrder(Long id);
+    OrderResponse cancelOrder(String email, Long id);
 }
