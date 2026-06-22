@@ -9,12 +9,12 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.ptithcm.frontend.databinding.ActivitySplashBinding;
-import com.ptithcm.frontend.utils.TokenManager;
+import com.ptithcm.frontend.utils.SharedPrefsManager;
 
-public class SplashActivity extends AppCompatActivity {
+public class SplashActivity extends BaseActivity {
 
     private ActivitySplashBinding binding;
-    private TokenManager tokenManager;
+    private SharedPrefsManager sharedPrefsManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,14 +22,15 @@ public class SplashActivity extends AppCompatActivity {
         binding = ActivitySplashBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        tokenManager = new TokenManager(this);
+        sharedPrefsManager = new SharedPrefsManager(this);
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            if (tokenManager.hasToken()) {
+            if (sharedPrefsManager.hasToken()) {
                 startActivity(new Intent(SplashActivity.this, MainActivity.class));
                 finish();
             } else {
-                binding.authActionContainer.setVisibility(View.VISIBLE);
+                startActivity(new Intent(SplashActivity.this, LoginActivity.class));
+                finish();
             }
         }, 1500);
 

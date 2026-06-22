@@ -24,6 +24,12 @@
             android:name=".activities.ProfileActivity"
             android:exported="false" />
         <activity
+            android:name=".activities.OrderHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.OrderDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.OrderSuccessActivity"
             android:exported="false" />
         <activity

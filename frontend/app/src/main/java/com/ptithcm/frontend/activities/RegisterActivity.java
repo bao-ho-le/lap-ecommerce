@@ -11,13 +11,13 @@ import androidx.lifecycle.ViewModelProvider;
 import com.ptithcm.frontend.databinding.ActivityRegisterBinding;
 import com.ptithcm.frontend.network.dto.RegisterRequestDto;
 import com.ptithcm.frontend.ui.auth.AuthViewModel;
-import com.ptithcm.frontend.utils.TokenManager;
+import com.ptithcm.frontend.utils.SharedPrefsManager;
 
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends BaseActivity {
 
     private ActivityRegisterBinding binding;
     private AuthViewModel authViewModel;
-    private TokenManager tokenManager;
+    private SharedPrefsManager sharedPrefsManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,21 +26,30 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
-        tokenManager = new TokenManager(this);
+        sharedPrefsManager = new SharedPrefsManager(this);
 
         binding.btnRegister.setOnClickListener(v -> {
             String fullName = binding.etFullName.getText().toString().trim();
             String email = binding.etEmail.getText().toString().trim();
             String password = binding.etPassword.getText().toString().trim();
             String phone = binding.etPhone.getText().toString().trim();
-            String address = binding.etAddress.getText().toString().trim();
 
-            if (fullName.isEmpty() || email.isEmpty() || password.isEmpty() || phone.isEmpty() || address.isEmpty()) {
-                Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+            if (fullName.isEmpty() || email.isEmpty() || password.isEmpty() || phone.isEmpty()) {
+                showToast("Please fill in all fields");
                 return;
             }
 
-            RegisterRequestDto request = new RegisterRequestDto(fullName, email, password, phone, address);
+            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                showToast("Please enter a valid email address");
+                return;
+            }
+
+            if (password.length() < 6) {
+                showToast("Password must be at least 6 characters");
+                return;
+            }
+
+            RegisterRequestDto request = new RegisterRequestDto(fullName, email, password, phone, "");
             authViewModel.register(request);
         });
 
@@ -56,8 +65,10 @@ public class RegisterActivity extends AppCompatActivity {
 
         authViewModel.getAuthResult().observe(this, authResponseDto -> {
             if (authResponseDto != null && authResponseDto.getAccessToken() != null) {
-                tokenManager.saveToken(authResponseDto.getAccessToken());
-                Toast.makeText(this, "Registration Successful", Toast.LENGTH_SHORT).show();
+                sharedPrefsManager.saveToken(authResponseDto.getAccessToken());
+                sharedPrefsManager.saveUser(authResponseDto.getUser());
+                sharedPrefsManager.saveEmailToHistory(binding.etEmail.getText().toString().trim());
+                showToast("Registration successful");
                 
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -68,7 +79,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         authViewModel.getAuthError().observe(this, error -> {
             if (error != null) {
-                Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+                showToast(error);
             }
         });
     }

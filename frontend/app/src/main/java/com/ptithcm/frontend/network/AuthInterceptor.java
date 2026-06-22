@@ -3,7 +3,7 @@ package com.ptithcm.frontend.network;
 import android.content.Context;
 import androidx.annotation.NonNull;
 
-import com.ptithcm.frontend.utils.TokenManager;
+import com.ptithcm.frontend.utils.SharedPrefsManager;
 
 import java.io.IOException;
 
@@ -13,10 +13,10 @@ import okhttp3.Response;
 
 public class AuthInterceptor implements Interceptor {
 
-    private final TokenManager tokenManager;
+    private final SharedPrefsManager sharedPrefsManager;
 
     public AuthInterceptor(Context context) {
-        this.tokenManager = new TokenManager(context);
+        this.sharedPrefsManager = new SharedPrefsManager(context);
     }
 
     @NonNull
@@ -30,7 +30,7 @@ public class AuthInterceptor implements Interceptor {
             return chain.proceed(originalRequest);
         }
 
-        String token = tokenManager.getToken();
+        String token = sharedPrefsManager.getToken();
         if (token != null && !token.isEmpty()) {
             Request newRequest = originalRequest.newBuilder()
                     .header("Authorization", "Bearer " + token)

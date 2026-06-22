@@ -69,7 +69,7 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtTokenProvider.generateToken(authentication);
         
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", request.getEmail()));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.getEmail()));
 
         return new AuthResponse(token, mapToDto(user));
     }
@@ -77,14 +77,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserProfileDto getProfile(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
         return mapToDto(user);
     }
 
     @Override
     public UserProfileDto updateProfile(String email, UserProfileDto request) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
 
         if (request.getFullName() != null) user.setFullName(request.getFullName());
         if (request.getPhone() != null) user.setPhone(request.getPhone());
