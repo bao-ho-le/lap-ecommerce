@@ -9,6 +9,7 @@ import com.ptithcm.frontend.network.dto.PageResponse;
 import com.ptithcm.frontend.network.dto.ProductReviewResponse;
 import com.ptithcm.frontend.network.dto.UpdateQuantityRequestDto;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -24,7 +25,14 @@ public interface ApiService {
     Call<CartResponseDto> getCart();
 
     @GET("products")
-    Call<java.util.List<com.ptithcm.frontend.network.dto.ProductDto>> getProducts();
+    Call<ResponseBody> getProducts(
+            @Query("q") String q,
+            @Query("categoryId") Long categoryId,
+            @Query("brandId") Long brandId,
+            @Query("sort") String sort,
+            @Query("page") Integer page,
+            @Query("size") Integer size
+    );
 
     @GET("products/{id}")
     Call<com.ptithcm.frontend.network.dto.ProductDto> getProductById(@Path("id") long id);

@@ -57,10 +57,13 @@ public class ReviewFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-
-        productId = (long) getArguments().getInt("product_id", -1);
-        if (productId == -1) {
+        Bundle args = getArguments();
+        productId = resolveProductId(args);
+        if (productId == null || productId <= 0) {
             Toast.makeText(getContext(), "Invalid product", Toast.LENGTH_SHORT).show();
+            if (getActivity() != null) {
+                getActivity().finish();
+            }
             return;
         }
 
@@ -75,12 +78,52 @@ public class ReviewFragment extends Fragment {
         binding.addReviewButton.setOnClickListener(v -> openAddReviewDialog());
     }
 
+    private Long resolveProductId(@Nullable Bundle args) {
+        if (args == null || !args.containsKey("product_id")) {
+            return null;
+        }
+
+        Object value = args.get("product_id");
+        if (value instanceof Number) {
+            long resolved = ((Number) value).longValue();
+            return resolved > 0 ? resolved : null;
+        }
+
+        return null;
+    }
+
     private void loadCurrentUser() {
         UserProfileDto user = sharedPrefsManager.getUser();
         if (user != null) {
             currentUserId = user.getId();
             currentUserFullName = user.getFullName();
         }
+    }
+
+    private boolean canSubmitReview() {
+        return sharedPrefsManager.hasToken();
+    }
+
+    private boolean hasOwnReview() {
+        for (ProductReviewResponse review : reviews) {
+            if (review == null) {
+                continue;
+            }
+            if (currentUserId != null && review.userId != null && currentUserId.equals(review.userId)) {
+                return true;
+            }
+            if (currentUserFullName != null && review.fullName != null
+                    && currentUserFullName.equalsIgnoreCase(review.fullName.trim())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void updateAddReviewButtonState() {
+        boolean enabled = canSubmitReview() && !hasOwnReview();
+        binding.addReviewButton.setEnabled(enabled);
+        binding.addReviewButton.setAlpha(enabled ? 1f : 0.5f);
     }
 
     private void confirmDeleteReview(ProductReviewResponse review) {
@@ -149,6 +192,16 @@ public class ReviewFragment extends Fragment {
     }
 
     private void openAddReviewDialog() {
+        if (!canSubmitReview()) {
+            Toast.makeText(getContext(), "Please login again to add a review", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (hasOwnReview()) {
+            Toast.makeText(getContext(), "You already reviewed this product", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         LayoutInflater inflater = LayoutInflater.from(getContext());
         View dialogView = inflater.inflate(R.layout.add_review, null);
 
@@ -187,6 +240,16 @@ public class ReviewFragment extends Fragment {
     }
 
     private void submitReview(String comment, int rating) {
+        if (!canSubmitReview()) {
+            Toast.makeText(getContext(), "Please login again to add a review", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (hasOwnReview()) {
+            Toast.makeText(getContext(), "You already reviewed this product", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         reviewRepository.createReview(productId, rating, comment, new RepositoryCallback<>() {
             @Override
             public void onSuccess(com.ptithcm.frontend.network.dto.CreateReviewResponseDto result) {
@@ -247,6 +310,7 @@ public class ReviewFragment extends Fragment {
                         reviews.addAll(result.content);
                     }
                     adapter.submitList(new ArrayList<>(reviews));
+                    updateAddReviewButtonState();
 
                     currentPage = result.page;
                     lastPage = result.last || result.page >= result.totalPages - 1;
@@ -258,6 +322,7 @@ public class ReviewFragment extends Fragment {
             public void onError(String message) {
                 requireActivity().runOnUiThread(() -> {
                     isLoading = false;
+                    updateAddReviewButtonState();
                     Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
                 });
             }

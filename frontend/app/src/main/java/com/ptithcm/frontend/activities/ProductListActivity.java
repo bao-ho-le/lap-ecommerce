@@ -6,14 +6,14 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.ptithcm.frontend.adapters.ProductAdapter;
-import com.ptithcm.frontend.databinding.ActivityMainBinding;
+import com.ptithcm.frontend.databinding.ActivityProductListBinding;
 import com.ptithcm.frontend.models.Product;
 import com.ptithcm.frontend.repository.ProductRepository;
 import com.ptithcm.frontend.repository.RepositoryCallback;
@@ -21,9 +21,9 @@ import com.ptithcm.frontend.repository.RepositoryCallback;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class ProductListActivity extends AppCompatActivity {
 
-    private ActivityMainBinding binding;
+    private ActivityProductListBinding binding;
     private ProductAdapter adapter;
     private ProductRepository productRepository;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -32,18 +32,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        binding = ActivityProductListBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         productRepository = ProductRepository.getInstance(this);
         adapter = new ProductAdapter(product -> {
-            Intent intent = new Intent(MainActivity.this, ProductDetailActivity.class);
+            Intent intent = new Intent(ProductListActivity.this, ProductDetailActivity.class);
             intent.putExtra("product_id", product.getId());
             startActivity(intent);
         });
 
         binding.productsRecycler.setLayoutManager(new LinearLayoutManager(this));
         binding.productsRecycler.setAdapter(adapter);
+
+        binding.backButton.setOnClickListener(v -> finish());
 
         binding.searchInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -60,24 +62,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        binding.homeButton.setOnClickListener(v -> refreshHome());
-        binding.profileButton.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, ProfileActivity.class)));
-        binding.orderHistoryButton.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, OrderHistoryActivity.class)));
-        binding.cartButton.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, CartActivity.class)));
-
         loadProducts(null);
-    }
-
-    private void refreshHome() {
-        if (binding.searchInput.getText() != null && binding.searchInput.getText().length() > 0) {
-            binding.searchInput.setText("");
-        } else {
-            loadProducts(null);
-        }
-        binding.productsRecycler.scrollToPosition(0);
     }
 
     private void scheduleSearch() {
@@ -88,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         pendingSearch = () -> loadProducts(binding.searchInput.getText() != null
                 ? binding.searchInput.getText().toString()
                 : null);
+
         handler.postDelayed(pendingSearch, 300);
     }
 
@@ -101,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
                     adapter.submitList(safeResult);
                     boolean empty = safeResult.isEmpty();
                     binding.statusText.setText(empty ? "No products found" : "");
-                    binding.statusText.setVisibility(empty ? View.VISIBLE : View.GONE);
+                    binding.statusText.setVisibility(empty ? android.view.View.VISIBLE : android.view.View.GONE);
                     setLoading(false);
                 });
             }
@@ -111,18 +97,16 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     adapter.submitList(new ArrayList<>());
                     binding.statusText.setText(message);
-                    binding.statusText.setVisibility(View.VISIBLE);
+                    binding.statusText.setVisibility(android.view.View.VISIBLE);
                     setLoading(false);
+                    Toast.makeText(ProductListActivity.this, message, Toast.LENGTH_LONG).show();
                 });
             }
         });
     }
 
     private void setLoading(boolean loading) {
-        binding.progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
-        binding.productsRecycler.setVisibility(loading ? View.GONE : View.VISIBLE);
-        if (!loading && adapter.getItemCount() > 0) {
-            binding.statusText.setVisibility(View.GONE);
-        }
+        binding.progressBar.setVisibility(loading ? android.view.View.VISIBLE : android.view.View.GONE);
+        binding.productsRecycler.setVisibility(loading ? android.view.View.GONE : android.view.View.VISIBLE);
     }
 }
