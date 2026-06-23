@@ -33,6 +33,9 @@ public class ReviewServiceImpl implements ReviewService {
 
         return reviewRepository.findByProductId(productId, pageable)
                 .map(review -> ProductReviewResponse.builder()
+                        .reviewId(review.getId())
+                        .userId(review.getUser().getId())
+                        .productId(productId)
                         .comment(review.getComment())
                         .rating(review.getRating())
                         .fullName(review.getUser().getFullName())

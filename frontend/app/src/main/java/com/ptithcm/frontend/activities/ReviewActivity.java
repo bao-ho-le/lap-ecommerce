@@ -14,6 +14,8 @@ public class ReviewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_review);
 
+        findViewById(R.id.backButton).setOnClickListener(v -> finish());
+
         if (savedInstanceState == null) {
 
             ReviewFragment fragment = new ReviewFragment();

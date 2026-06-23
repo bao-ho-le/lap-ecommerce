@@ -2,6 +2,7 @@ package com.ptithcm.frontend.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -24,6 +25,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class CartActivity extends AppCompatActivity {
+
+    private static final String TAG = "CART_DEBUG";
 
     public static final String EXTRA_CART_ITEMS = "extra_cart_items";
     public static final String EXTRA_CART_TOTAL = "extra_cart_total";
@@ -129,9 +132,17 @@ public class CartActivity extends AppCompatActivity {
     }
 
     private void handleQuantityChange(CartItemDto item, int newQuantity) {
-        if (loading || item.cartId == null) {
+        if (loading) {
+            Log.d(TAG, "Ignored quantity change while loading");
             return;
         }
+        if (item == null || item.cartId == null) {
+            Log.d(TAG, "Cannot update quantity: missing cartId for productId=" + (item != null ? item.productId : null));
+            Toast.makeText(this, "Unable to update item. Please refresh the cart.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d(TAG, "updateQuantity cartId=" + item.cartId + " qty=" + newQuantity);
 
         int oldQuantity = item.quantity == null ? 1 : item.quantity;
         adapter.updateQuantity(item.cartId, newQuantity);
@@ -159,9 +170,17 @@ public class CartActivity extends AppCompatActivity {
     }
 
     private void handleDelete(CartItemDto item) {
-        if (loading || item.cartId == null) {
+        if (loading) {
+            Log.d(TAG, "Ignored delete while loading");
             return;
         }
+        if (item == null || item.cartId == null) {
+            Log.d(TAG, "Cannot delete item: missing cartId for productId=" + (item != null ? item.productId : null));
+            Toast.makeText(this, "Unable to remove item. Please refresh the cart.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d(TAG, "deleteItem cartId=" + item.cartId);
 
         // Backup nếu xoá thất bại
         int position = adapter.getPositionById(item.cartId);
@@ -182,6 +201,8 @@ public class CartActivity extends AppCompatActivity {
             @Override
             public void onError(String message) {
                 runOnUiThread(() -> {
+                    Log.d(TAG, "deleteItem failed: " + message);
+                    Toast.makeText(CartActivity.this, message, Toast.LENGTH_LONG).show();
                     adapter.restoreItem(position, backup);
                     currentTotal = calculateTotal(adapter.getItems());
                     updateTotalLabel();

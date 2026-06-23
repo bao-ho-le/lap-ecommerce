@@ -12,16 +12,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.ptithcm.frontend.R;
 import com.ptithcm.frontend.database.DatabaseHelper;
-import com.ptithcm.frontend.network.ApiClient;
 import com.ptithcm.frontend.network.dto.CartItemDto;
 import com.ptithcm.frontend.network.dto.OrderResponseDto;
+import com.ptithcm.frontend.repository.OrderRepository;
+import com.ptithcm.frontend.repository.RepositoryCallback;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class OrderDetailActivity extends BaseActivity {
 
@@ -41,6 +38,11 @@ public class OrderDetailActivity extends BaseActivity {
         if (orderId == -1) {
             finish();
             return;
+        }
+
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            toolbar.setNavigationOnClickListener(v -> finish());
         }
 
         tvOrderId = findViewById(R.id.tvOrderId);
@@ -64,21 +66,21 @@ public class OrderDetailActivity extends BaseActivity {
 
     private void fetchOrderDetails() {
         progressBar.setVisibility(View.VISIBLE);
-        ApiClient.getApiService(this).getOrderById(orderId).enqueue(new Callback<OrderResponseDto>() {
+        OrderRepository.getInstance(this).getOrderById(orderId, new RepositoryCallback<OrderResponseDto>() {
             @Override
-            public void onResponse(Call<OrderResponseDto> call, Response<OrderResponseDto> response) {
-                progressBar.setVisibility(View.GONE);
-                if (response.isSuccessful() && response.body() != null) {
-                    populateUI(response.body());
-                } else {
-                    loadOfflineData();
-                }
+            public void onSuccess(OrderResponseDto order) {
+                runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    populateUI(order);
+                });
             }
 
             @Override
-            public void onFailure(Call<OrderResponseDto> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                loadOfflineData();
+            public void onError(String message) {
+                runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    loadOfflineData();
+                });
             }
         });
     }

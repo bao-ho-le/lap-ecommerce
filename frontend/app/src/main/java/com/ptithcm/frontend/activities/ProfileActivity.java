@@ -29,6 +29,8 @@ public class ProfileActivity extends BaseActivity {
         profileViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
         sharedPrefsManager = new SharedPrefsManager(this);
 
+        binding.backButton.setOnClickListener(v -> finish());
+
         // Pre-fill from SharedPrefsManager
         UserProfileDto savedUser = sharedPrefsManager.getUser();
         if (savedUser != null) {

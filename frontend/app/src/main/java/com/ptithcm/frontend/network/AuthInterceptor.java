@@ -15,6 +15,8 @@ import okhttp3.Response;
 
 public class AuthInterceptor implements Interceptor {
 
+    private static final String TAG = "AUTH";
+
     private final SharedPrefsManager sharedPrefsManager;
 
     public AuthInterceptor(Context context) {
@@ -26,24 +28,31 @@ public class AuthInterceptor implements Interceptor {
     public Response intercept(@NonNull Chain chain) throws IOException {
 
         Request originalRequest = chain.request();
-
         String path = originalRequest.url().encodedPath();
 
-        // skip auth APIs
+        Log.d("CART_API", "URL = " + originalRequest.url());
+        Log.d("CART_API", "Method = " + originalRequest.method());
+
+        // Public endpoints — no Authorization header needed
         if (path.contains("/auth/login") || path.contains("/auth/register")) {
             return chain.proceed(originalRequest);
         }
 
         String token = sharedPrefsManager.getToken();
+        Log.d(TAG, "Token exists = " + (token != null && !token.isEmpty()));
 
         if (token != null && !token.isEmpty()) {
-            Request newRequest = originalRequest.newBuilder()
-                    .addHeader("Authorization", "Bearer " + token)
+            Request authenticatedRequest = originalRequest.newBuilder()
+                    .header("Authorization", "Bearer " + token)
                     .build();
 
-            return chain.proceed(newRequest);
+            Response response = chain.proceed(authenticatedRequest);
+            Log.d("CART_API", "Code = " + response.code());
+            return response;
         }
 
-        return chain.proceed(originalRequest);
+        Response response = chain.proceed(originalRequest);
+        Log.d("CART_API", "Code = " + response.code());
+        return response;
     }
 }

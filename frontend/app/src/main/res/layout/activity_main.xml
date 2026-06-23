@@ -121,6 +121,18 @@
                 app:strokeColor="@color/premium_border"
                 app:cornerRadius="18dp" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/openOrderHistoryButton"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Order History"
+                android:textAllCaps="false"
+                android:textColor="@color/premium_black"
+                app:strokeColor="@color/premium_border"
+                app:cornerRadius="18dp" />
+
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

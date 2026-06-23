@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.ptithcm.frontend.databinding.ItemOrderBinding;
@@ -15,7 +16,21 @@ import java.util.List;
 
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
 
+    public interface OnOrderClickListener {
+        void onOrderClick(OrderSummary order);
+    }
+
     private final List<OrderSummary> items = new ArrayList<>();
+    @Nullable
+    private final OnOrderClickListener clickListener;
+
+    public OrderAdapter() {
+        this(null);
+    }
+
+    public OrderAdapter(@Nullable OnOrderClickListener clickListener) {
+        this.clickListener = clickListener;
+    }
 
     public void submitList(List<OrderSummary> orders) {
         items.clear();
@@ -51,11 +66,20 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         }
 
         void bind(OrderSummary order) {
-            binding.orderCode.setText(order.getCode());
-            binding.orderStatus.setText(order.getStatus());
-            binding.orderDate.setText(order.getOrderDate());
+            if (order == null) {
+                return;
+            }
+            binding.orderCode.setText(order.getCode() != null ? order.getCode() : "");
+            binding.orderStatus.setText(order.getStatus() != null ? order.getStatus() : "");
+            binding.orderDate.setText(order.getOrderDate() != null ? order.getOrderDate() : "");
             binding.orderItemsCount.setText(order.getItemCount() + " items");
             binding.orderTotal.setText(PriceFormatUtils.formatCurrency(order.getTotalAmount()));
+
+            if (clickListener != null) {
+                itemView.setOnClickListener(v -> clickListener.onOrderClick(order));
+            } else {
+                itemView.setOnClickListener(null);
+            }
         }
     }
 }
