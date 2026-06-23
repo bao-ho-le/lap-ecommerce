@@ -64,8 +64,9 @@
             android:layout_height="56dp"
             android:text="Login"
             app:cornerRadius="12dp"
-            app:backgroundTint="@color/premium_black"
-            android:textColor="@color/white" />
+            android:background="@drawable/buttonround"
+            app:backgroundTint="@null"
+            android:textColor="#FFFFFF" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRegister"
@@ -76,7 +77,9 @@
             android:text="Register"
             app:cornerRadius="12dp"
             app:strokeColor="@color/premium_border"
-            android:textColor="@color/premium_black" />
+            android:background="@drawable/buttonround"
+            app:backgroundTint="@null"
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -83,8 +83,9 @@
         android:layout_marginTop="32dp"
         android:text="Save Changes"
         app:cornerRadius="12dp"
-        app:backgroundTint="@color/premium_black"
-        android:textColor="@color/white"
+        android:background="@drawable/buttonround"
+        app:backgroundTint="@null"
+        android:textColor="#FFFFFF"
         app:layout_constraintTop_toBottomOf="@id/tilAddress" />
 
     <com.google.android.material.button.MaterialButton
@@ -96,7 +97,9 @@
         android:text="Logout"
         app:cornerRadius="12dp"
         app:strokeColor="#FF3B30"
-        android:textColor="#FF3B30"
+        android:background="@drawable/buttonround"
+        app:backgroundTint="@null"
+        android:textColor="#FFFFFF"
         app:layout_constraintTop_toBottomOf="@id/btnSave" />
 
     <ProgressBar

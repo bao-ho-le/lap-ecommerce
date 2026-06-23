@@ -109,8 +109,9 @@
             android:layout_marginTop="22dp"
             android:text="Back to Home"
             android:textAllCaps="false"
-            android:textColor="@color/premium_black"
-            app:backgroundTint="@color/white"
+            android:background="@drawable/buttonround"
+            app:backgroundTint="@null"
+            android:textColor="#FFFFFF"
             app:cornerRadius="18dp"
             app:strokeColor="@color/premium_border"
             app:strokeWidth="1dp" />
@@ -161,8 +162,9 @@
                 android:layout_marginTop="18dp"
                 android:text="Checkout"
                 android:textAllCaps="false"
-                android:textColor="@color/white"
-                app:backgroundTint="@color/premium_black"
+                android:background="@drawable/buttonround"
+                app:backgroundTint="@null"
+                android:textColor="#FFFFFF"
                 app:cornerRadius="18dp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
