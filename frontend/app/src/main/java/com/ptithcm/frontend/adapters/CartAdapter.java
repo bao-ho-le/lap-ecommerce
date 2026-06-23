@@ -2,6 +2,7 @@ package com.ptithcm.frontend.adapters;
 
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,8 +16,11 @@ import com.ptithcm.frontend.utils.PriceFormatUtils;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder> {
+
+    private static final String TAG = "CART_ADAPTER";
 
     public interface CartActionListener {
         void onIncrease(CartItemDto item);
@@ -42,7 +46,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         return new ArrayList<>(items);
     }
 
-    public void updateQuantity(int cartId, int quantity) {
+    public void updateQuantity(long cartId, int quantity) {
         int index = findIndex(cartId);
         if (index < 0) {
             return;
@@ -56,7 +60,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         notifyItemChanged(index);
     }
 
-    public void removeItem(int cartId) {
+    public void removeItem(long cartId) {
         int index = findIndex(cartId);
         if (index < 0) {
             return;
@@ -70,19 +74,20 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         notifyItemInserted(position);
     }
 
-    public int findIndex(int cartId) {
+    public int findIndex(long cartId) {
         for (int i = 0; i < items.size(); i++) {
             CartItemDto item = items.get(i);
-            if (item.cartId != null && item.cartId == cartId) {
+            if (item.cartId != null && Objects.equals(item.cartId, cartId)) {
                 return i;
             }
         }
         return -1;
     }
 
-    public int getPositionById(int cartId) {
+    public int getPositionById(long cartId) {
         for (int i = 0; i < items.size(); i++) {
-            if (items.get(i).cartId == cartId) {
+            Long id = items.get(i).cartId;
+            if (id != null && Objects.equals(id, cartId)) {
                 return i;
             }
         }
@@ -115,18 +120,49 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         }
 
         void bind(CartItemDto item) {
+            if (item == null) {
+                return;
+            }
+
             Glide.with(binding.getRoot())
                     .load(resolveImage(item))
                     .into(binding.cartImage);
-            binding.cartName.setText(item.productName);
+            binding.cartName.setText(item.productName != null ? item.productName : "");
             binding.cartPrice.setText(PriceFormatUtils.formatCurrency(item.unitPrice));
             binding.cartSubtotal.setText(PriceFormatUtils.formatCurrency(item.subtotal));
-            binding.quantityValue.setText(String.valueOf(item.quantity == null ? 1 : item.quantity));
-            binding.decreaseButton.setEnabled(item.quantity == null || item.quantity > 1);
+
+            int quantity = item.quantity == null ? 1 : item.quantity;
+            binding.quantityValue.setText(String.valueOf(quantity));
+            binding.decreaseButton.setEnabled(quantity > 1);
             binding.decreaseButton.setAlpha(binding.decreaseButton.isEnabled() ? 1f : 0.45f);
-            binding.increaseButton.setOnClickListener(v -> listener.onIncrease(item));
-            binding.decreaseButton.setOnClickListener(v -> listener.onDecrease(item));
-            binding.removeButton.setOnClickListener(v -> listener.onRemove(item));
+
+            // Resolve item from adapter position so click handlers always use current data
+            binding.increaseButton.setOnClickListener(v -> dispatchAction(getBindingAdapterPosition(), true, false, false));
+            binding.decreaseButton.setOnClickListener(v -> dispatchAction(getBindingAdapterPosition(), false, true, false));
+            binding.removeButton.setOnClickListener(v -> dispatchAction(getBindingAdapterPosition(), false, false, true));
+
+            // Prevent parent from intercepting button taps inside the card
+            binding.increaseButton.setClickable(true);
+            binding.decreaseButton.setClickable(true);
+            binding.removeButton.setClickable(true);
+        }
+
+        private void dispatchAction(int position, boolean increase, boolean decrease, boolean remove) {
+            if (position == RecyclerView.NO_POSITION || position >= items.size()) {
+                Log.d(TAG, "Ignored cart action for invalid position=" + position);
+                return;
+            }
+            CartItemDto currentItem = items.get(position);
+            if (currentItem == null) {
+                return;
+            }
+            if (remove) {
+                listener.onRemove(currentItem);
+            } else if (increase) {
+                listener.onIncrease(currentItem);
+            } else if (decrease) {
+                listener.onDecrease(currentItem);
+            }
         }
 
         private int resolveImage(CartItemDto item) {

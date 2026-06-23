@@ -79,7 +79,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_LOCAL_ORDER_ITEMS, null, null);
         db.delete(TABLE_LOCAL_ORDERS, null, null);
-        db.close();
     }
 
     public void saveOrders(java.util.List<com.ptithcm.frontend.network.dto.OrderResponseDto> orders) {
@@ -87,7 +86,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
         try {
-            clearOrders(); // Clear existing cache first
+            // Clear cache inside the same transaction — do not call clearOrders() which used to close db
+            db.delete(TABLE_LOCAL_ORDER_ITEMS, null, null);
+            db.delete(TABLE_LOCAL_ORDERS, null, null);
             for (com.ptithcm.frontend.network.dto.OrderResponseDto order : orders) {
                 android.content.ContentValues orderValues = new android.content.ContentValues();
                 orderValues.put(COLUMN_ID, order.id);
@@ -114,7 +115,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
-            db.close();
         }
     }
 
@@ -136,7 +136,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
         }
         cursor.close();
-        db.close();
         return orders;
     }
 
@@ -171,7 +170,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             itemCursor.close();
         }
         cursor.close();
-        db.close();
         return order;
     }
 }

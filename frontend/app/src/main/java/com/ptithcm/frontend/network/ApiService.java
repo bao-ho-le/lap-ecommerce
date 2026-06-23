@@ -1,8 +1,12 @@
 package com.ptithcm.frontend.network;
 
 import com.ptithcm.frontend.network.dto.CartResponseDto;
+import com.ptithcm.frontend.network.dto.CreateReviewRequestDto;
+import com.ptithcm.frontend.network.dto.CreateReviewResponseDto;
 import com.ptithcm.frontend.network.dto.OrderRequestDto;
 import com.ptithcm.frontend.network.dto.OrderResponseDto;
+import com.ptithcm.frontend.network.dto.PageResponse;
+import com.ptithcm.frontend.network.dto.ProductReviewResponse;
 import com.ptithcm.frontend.network.dto.UpdateQuantityRequestDto;
 
 import retrofit2.Call;
@@ -12,6 +16,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ApiService {
 
@@ -25,10 +30,10 @@ public interface ApiService {
     Call<com.ptithcm.frontend.network.dto.ProductDto> getProductById(@Path("id") long id);
 
     @PUT("cart/{id}/quantity")
-    Call<CartResponseDto> updateQuantity(@Path("id") int cartId, @Body UpdateQuantityRequestDto body);
+    Call<CartResponseDto> updateQuantity(@Path("id") long cartItemId, @Body UpdateQuantityRequestDto body);
 
     @DELETE("cart/{id}")
-    Call<CartResponseDto> deleteItem(@Path("id") int cartId);
+    Call<CartResponseDto> deleteItem(@Path("id") long cartItemId);
 
     @DELETE("cart/clear")
     Call<Void> clearCart();
@@ -60,5 +65,19 @@ public interface ApiService {
 
     @PUT("auth/profile")
     Call<com.ptithcm.frontend.network.dto.UserProfileDto> updateProfile(@Body com.ptithcm.frontend.network.dto.UserProfileDto body);
+
+    @GET("products/{productId}/reviews")
+    Call<PageResponse<ProductReviewResponse>> getProductReviews(
+            @Path("productId") long productId,
+            @Query("page") int page,
+            @Query("size") int size);
+
+    @POST("products/{productId}/reviews")
+    Call<CreateReviewResponseDto> createReview(
+            @Path("productId") long productId,
+            @Body CreateReviewRequestDto body);
+
+    @DELETE("reviews/{id}")
+    Call<Void> deleteReview(@Path("id") long reviewId);
 
 }

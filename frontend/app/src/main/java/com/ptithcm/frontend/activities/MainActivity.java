@@ -2,12 +2,12 @@ package com.ptithcm.frontend.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 
-import androidx.appcompat.app.AppCompatActivity;
 import com.ptithcm.frontend.R;
 import com.google.android.material.button.MaterialButton;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends androidx.appcompat.app.AppCompatActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -15,7 +15,6 @@ public class MainActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_main);
 
 		MaterialButton openCartButton = findViewById(R.id.openCartButton);
-
 		openCartButton.setOnClickListener(v ->
                 startActivity(new Intent(this, CartActivity.class)));
 
@@ -24,6 +23,11 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, ReviewActivity.class)));
 
 		MaterialButton openProfileButton = findViewById(R.id.openProfileButton);
-		openProfileButton.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
+		openProfileButton.setOnClickListener(v ->
+                startActivity(new Intent(this, ProfileActivity.class)));
+
+		MaterialButton openOrderHistoryButton = findViewById(R.id.openOrderHistoryButton);
+		openOrderHistoryButton.setOnClickListener(v ->
+                startActivity(new Intent(this, OrderHistoryActivity.class)));
 	}
 }

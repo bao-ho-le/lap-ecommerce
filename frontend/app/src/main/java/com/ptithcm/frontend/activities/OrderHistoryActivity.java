@@ -2,31 +2,29 @@ package com.ptithcm.frontend.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.ptithcm.frontend.R;
+import com.ptithcm.frontend.adapters.OrderAdapter;
 import com.ptithcm.frontend.database.DatabaseHelper;
-import com.ptithcm.frontend.network.ApiClient;
+import com.ptithcm.frontend.models.OrderSummary;
 import com.ptithcm.frontend.network.dto.OrderResponseDto;
+import com.ptithcm.frontend.repository.OrderRepository;
+import com.ptithcm.frontend.repository.RepositoryCallback;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
+// Read-only screen: displays purchase history, no edit/cancel actions
 public class OrderHistoryActivity extends BaseActivity {
 
-    private RecyclerView rvOrders;
-    private View progressBar;
+    private static final String TAG = "ORDER_HISTORY";
+
+    private android.widget.ProgressBar progressBar;
+    private androidx.recyclerview.widget.RecyclerView rvOrders;
     private OrderAdapter adapter;
     private DatabaseHelper dbHelper;
 
@@ -35,36 +33,56 @@ public class OrderHistoryActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_history);
 
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            toolbar.setNavigationOnClickListener(v -> finish());
+        }
+
         rvOrders = findViewById(R.id.rvOrders);
         progressBar = findViewById(R.id.progressBar);
         dbHelper = new DatabaseHelper(this);
 
+        adapter = new OrderAdapter(order -> {
+            Intent intent = new Intent(OrderHistoryActivity.this, OrderDetailActivity.class);
+            intent.putExtra("ORDER_ID", order.getId());
+            startActivity(intent);
+        });
+
         rvOrders.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new OrderAdapter();
         rvOrders.setAdapter(adapter);
 
         fetchOrders();
     }
 
     private void fetchOrders() {
-        progressBar.setVisibility(View.VISIBLE);
-        ApiClient.getApiService(this).getOrders().enqueue(new Callback<List<OrderResponseDto>>() {
+        if (progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+
+        OrderRepository.getInstance(this).getOrders(new RepositoryCallback<List<OrderResponseDto>>() {
             @Override
-            public void onResponse(Call<List<OrderResponseDto>> call, Response<List<OrderResponseDto>> response) {
-                progressBar.setVisibility(View.GONE);
-                if (response.isSuccessful() && response.body() != null) {
-                    List<OrderResponseDto> orders = response.body();
-                    dbHelper.saveOrders(orders);
-                    adapter.setOrders(orders);
-                } else {
-                    loadOfflineData();
-                }
+            public void onSuccess(List<OrderResponseDto> orders) {
+                runOnUiThread(() -> {
+                    if (progressBar != null) {
+                        progressBar.setVisibility(View.GONE);
+                    }
+                    Log.d(TAG, "Loaded " + (orders != null ? orders.size() : 0) + " orders");
+                    if (orders != null && !orders.isEmpty()) {
+                        dbHelper.saveOrders(orders);
+                    }
+                    adapter.submitList(mapToSummaries(orders));
+                });
             }
 
             @Override
-            public void onFailure(Call<List<OrderResponseDto>> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                loadOfflineData();
+            public void onError(String message) {
+                runOnUiThread(() -> {
+                    if (progressBar != null) {
+                        progressBar.setVisibility(View.GONE);
+                    }
+                    Log.d(TAG, "Fetch failed: " + message);
+                    loadOfflineData();
+                });
             }
         });
     }
@@ -72,64 +90,28 @@ public class OrderHistoryActivity extends BaseActivity {
     private void loadOfflineData() {
         showToast("Viewing offline data");
         List<OrderResponseDto> offlineOrders = dbHelper.getOrders();
-        adapter.setOrders(offlineOrders);
+        adapter.submitList(mapToSummaries(offlineOrders));
     }
 
-    private class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
-
-        private List<OrderResponseDto> orders = new ArrayList<>();
-
-        public void setOrders(List<OrderResponseDto> newOrders) {
-            this.orders = newOrders;
-            notifyDataSetChanged();
+    private List<OrderSummary> mapToSummaries(List<OrderResponseDto> dtos) {
+        List<OrderSummary> summaries = new ArrayList<>();
+        if (dtos == null) {
+            return summaries;
         }
-
-        @NonNull
-        @Override
-        public OrderViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_order, parent, false);
-            return new OrderViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
-            OrderResponseDto order = orders.get(position);
-            holder.orderCode.setText("Order #" + order.id);
-            holder.orderStatus.setText(order.status != null ? order.status : "Unknown");
-            holder.orderDate.setText(order.orderDate != null ? order.orderDate : "");
-            
-            int itemsCount = (order.items != null) ? order.items.size() : 0;
-            holder.orderItemsCount.setText(itemsCount + " items");
-            
-            if (order.totalAmount != null) {
-                holder.orderTotal.setText("$" + order.totalAmount.toString());
-            } else {
-                holder.orderTotal.setText("$0.00");
+        for (OrderResponseDto dto : dtos) {
+            if (dto == null || dto.id == null) {
+                continue;
             }
-
-            holder.itemView.setOnClickListener(v -> {
-                Intent intent = new Intent(OrderHistoryActivity.this, OrderDetailActivity.class);
-                intent.putExtra("ORDER_ID", order.id);
-                startActivity(intent);
-            });
+            int itemCount = dto.items == null ? 0 : dto.items.size();
+            summaries.add(new OrderSummary(
+                    dto.id,
+                    "Order #" + dto.id,
+                    dto.status != null ? dto.status : "UNKNOWN",
+                    dto.orderDate != null ? dto.orderDate : "",
+                    dto.totalAmount,
+                    itemCount
+            ));
         }
-
-        @Override
-        public int getItemCount() {
-            return orders.size();
-        }
-
-        class OrderViewHolder extends RecyclerView.ViewHolder {
-            TextView orderCode, orderStatus, orderDate, orderItemsCount, orderTotal;
-
-            public OrderViewHolder(@NonNull View itemView) {
-                super(itemView);
-                orderCode = itemView.findViewById(R.id.orderCode);
-                orderStatus = itemView.findViewById(R.id.orderStatus);
-                orderDate = itemView.findViewById(R.id.orderDate);
-                orderItemsCount = itemView.findViewById(R.id.orderItemsCount);
-                orderTotal = itemView.findViewById(R.id.orderTotal);
-            }
-        }
+        return summaries;
     }
 }

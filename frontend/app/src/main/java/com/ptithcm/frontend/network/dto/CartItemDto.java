@@ -7,8 +7,9 @@ import java.math.BigDecimal;
 
 public class CartItemDto implements Serializable {
 
-    @SerializedName("cartId")
-    public Integer cartId;
+    // Backend may serialize cart line id as cartId or id
+    @SerializedName(value = "cartId", alternate = {"id"})
+    public Long cartId;
 
     @SerializedName("productId")
     public Long productId;

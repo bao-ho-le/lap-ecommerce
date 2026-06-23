@@ -20,7 +20,7 @@ public class AuthRepository {
     private final ApiService api;
 
     private AuthRepository(Context context) {
-        api = ApiClient.getApiService(context);
+        api = ApiClient.getApiService(context.getApplicationContext());
     }
 
     public static AuthRepository getInstance(Context context) {

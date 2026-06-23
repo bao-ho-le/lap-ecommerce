@@ -216,6 +216,7 @@ public class CartServiceImpl implements CartService {
                 .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
 
         return CartItemResponse.builder()
+                .cartId(cartItem.getId())
                 .productId(product.getId())
                 .productName(product.getName())
                 .unitPrice(product.getPrice())

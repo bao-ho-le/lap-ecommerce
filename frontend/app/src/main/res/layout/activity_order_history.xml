@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/white"
+        app:navigationIcon="@drawable/ic_back"
         app:title="Order History"
         app:layout_constraintTop_toTopOf="parent" />
 
